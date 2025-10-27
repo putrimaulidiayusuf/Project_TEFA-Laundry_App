@@ -1,7 +1,27 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'login_page.dart'; // pastikan file ini ada
 
-class LoadPage extends StatelessWidget {
+class LoadPage extends StatefulWidget {
   const LoadPage({super.key});
+
+  @override
+  State<LoadPage> createState() => _LoadPageState();
+}
+
+class _LoadPageState extends State<LoadPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Setelah 30 detik, pindah ke halaman login
+    Timer(const Duration(seconds: 5), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +46,8 @@ class LoadPage extends StatelessWidget {
         child: Center(
           child: Image.asset(
             'assets/images/logo.png',
-            height: 150,
-            width: 150,
+            height: 120,
+            width: 120,
             fit: BoxFit.contain,
           ),
         ),
