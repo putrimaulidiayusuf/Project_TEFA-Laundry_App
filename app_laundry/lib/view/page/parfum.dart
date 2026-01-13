@@ -1,27 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:app_laundry/view/widget/header.dart';
 
-void main() {
-  runApp(const ParfumPage());
-}
-
-class ParfumPage extends StatelessWidget {
+class ParfumPage extends StatefulWidget {
   const ParfumPage({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: KelolaParfumPage(),
-    );
-  }
+  _ParfumPageState createState() => _ParfumPageState();
 }
 
-class KelolaParfumPage extends StatefulWidget {
-  @override
-  _KelolaParfumPageState createState() => _KelolaParfumPageState();
-}
-
-class _KelolaParfumPageState extends State<KelolaParfumPage> {
+class _ParfumPageState extends State<ParfumPage> {
   final TextEditingController _searchController = TextEditingController();
   final List<String> _parfumList = [
     "Arizona",
@@ -97,38 +83,8 @@ class _KelolaParfumPageState extends State<KelolaParfumPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFF003366),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        "Kelola Parfum",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
+            const HeaderWidget(title: "Kelola Parfum"),
+            const SizedBox(height: 20),
             // Search Bar
             Padding(
               padding: const EdgeInsets.all(12),
