@@ -53,7 +53,7 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
     Navigator.pop(context, data);
   }
 
-  Widget _buildInputField({
+  Widget buildInputField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
