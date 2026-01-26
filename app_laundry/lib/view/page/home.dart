@@ -28,8 +28,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
+  bool isMenuOpen = false;
 
-  // daftar halaman utama (footer)
   final List<Widget> mainPages = const [
     _HomeContent(),
     RiwayatTransaksi(),
@@ -39,15 +39,20 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: selectedIndex,
-        children: mainPages,
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: selectedIndex,
+            children: mainPages,
+          ),
+          if (isMenuOpen) sideMenu(context),
+        ],
       ),
       bottomNavigationBar: footerBar(),
     );
   }
 
-  // Footer Bar (tetap muncul di semua halaman)
+  // ================= FOOTER =================
   Widget footerBar() {
     return Container(
       height: 70,
@@ -77,38 +82,135 @@ class _HomePageState extends State<HomePage> {
 
     return GestureDetector(
       onTap: () => setState(() => selectedIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // ICON tidak diwarnai putih lagi
-            Image.asset(
-              iconPath,
-              height: 25,
-              width: 25,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(iconPath, height: 25, width: 25),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: active ? Colors.white : Colors.white70,
+              fontWeight: active ? FontWeight.bold : FontWeight.normal,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: active ? Colors.white : Colors.white70,
-                fontWeight: active ? FontWeight.bold : FontWeight.normal,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= SIDE MENU =================
+  Widget sideMenu(BuildContext context) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => isMenuOpen = false),
+          child: Container(color: Colors.black45),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.75,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
             ),
-          ],
+            child: SafeArea(
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () =>
+                          setState(() => isMenuOpen = false),
+                    ),
+                    title: const Text(
+                      'Menu',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        menuItem('Layanan'),
+                        menuItem('Parfum'),
+                        menuItem('Pelanggan'),
+                        menuItem('Riwayat'),
+                        menuItem('Pengeluaran'),
+                        menuItem('Laporan'),
+                        menuItem('Pengaturan'),
+                        menuItem('Sekuriti'),
+                        menuItem('Ganti Password'),
+                        menuItem('Logout'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget menuItem(String title) {
+    return ListTile(
+      leading: CircleAvatar(backgroundColor: Colors.grey.shade300),
+      title: Text(title),
+      onTap: () {
+        setState(() => isMenuOpen = false);
+        openMenuPage(title);
+      },
+    );
+  }
+
+  void openMenuPage(String title) {
+    Widget page;
+    switch (title) {
+      case 'Layanan':
+        page = const LayananPage();
+        break;
+      case 'Parfum':
+        page = const ParfumPage();
+        break;
+      case 'Pelanggan':
+        page = const PelangganPage();
+        break;
+      case 'Riwayat':
+        page = const RiwayatPage();
+        break;
+      case 'Pengeluaran':
+        page = const PengeluaranPage();
+        break;
+      case 'Laporan':
+        page = const LaporanPage();
+        break;
+      case 'Pengaturan':
+        page = const PengaturanPage();
+        break;
+      case 'Sekuriti':
+      case 'Ganti Password':
+        page = const SekuritiPage();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => page),
     );
   }
 }
 
-// ============================= //
-// ==== ISI HALAMAN HOME ====== //
-// ============================= //
-
+// ================= HOME CONTENT =================
 class _HomeContent extends StatefulWidget {
   const _HomeContent();
 
@@ -125,19 +227,16 @@ class _HomeContentState extends State<_HomeContent>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    _fadeAnimation =
+        Tween<double>(begin: 0, end: 1).animate(_controller);
 
     _controller.forward();
   }
@@ -148,7 +247,7 @@ class _HomeContentState extends State<_HomeContent>
     super.dispose();
   }
 
-  // Header double-layer
+  // HEADER
   Widget headerAtas(BuildContext context) {
     return Stack(
       children: [
@@ -162,24 +261,10 @@ class _HomeContentState extends State<_HomeContent>
               bottomRight: Radius.circular(25),
             ),
           ),
-          child: const Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: EdgeInsets.only(left: 20, bottom: 10),
-              child: Text(
-                "Omzet Hari ini : Rp. 0",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
         ),
         Container(
           height: 85,
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           decoration: const BoxDecoration(
             color: Color(0xFF0A4174),
             borderRadius: BorderRadius.only(
@@ -188,44 +273,38 @@ class _HomeContentState extends State<_HomeContent>
             ),
           ),
           child: SafeArea(
-            bottom: false,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.menu, color: Colors.white, size: 28),
+                GestureDetector(
+                  onTap: () {
+                    final home =
+                        context.findAncestorStateOfType<_HomePageState>();
+                    home?.setState(() => home.isMenuOpen = true);
+                  },
+                  child:
+                      const Icon(Icons.more_vert, color: Colors.white),
+                ),
                 const Text(
                   "Laundryque",
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Serif',
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ProfilePage()),
+                    );
+                  },
+                  child: const CircleAvatar(
+                    backgroundColor: Color(0xFF9AC6E8),
+                    child: Icon(Icons.person, color: Colors.white),
                   ),
                 ),
-GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ProfilePage(),
-      ),
-    );
-  },
-  child: Container(
-    height: 35,
-    width: 35,
-    decoration: const BoxDecoration(
-      shape: BoxShape.circle,
-      color: Color(0xFF9AC6E8),
-    ),
-    child: const Icon(
-      Icons.person,
-      color: Colors.white,
-      size: 22,
-    ),
-  ),
-),
-
               ],
             ),
           ),
@@ -234,141 +313,40 @@ GestureDetector(
     );
   }
 
-  // Card Outlet
-  Widget cardOutlet(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const OutletPage()),
-          );
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF5A86AE),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    "Nama Outlet",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    "Alamat Outlet",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // buka halaman card
-  void openCardPage(BuildContext context, String nama) {
-    Widget target;
-    switch (nama) {
-      case 'Layanan':
-        target = const LayananPage();
-        break;
-      case 'Laporan':
-        target = const LaporanPage();
-        break;
-      case 'Riwayat':
-        target = const RiwayatPage();
-        break;
-      case 'Pengeluaran':
-        target = const PengeluaranPage();
-        break;
-      case 'Pelanggan':
-        target = const PelangganPage();
-        break;
-      case 'Kasir':
-        target = const KasirPage();
-        break;
-      case 'Parfum':
-        target = const ParfumPage();
-        break;
-      case 'Satuan':
-        target = const SatuanPage();
-        break;
-      case 'Sekuriti':
-        target = const SekuritiPage();
-        break;
-      default:
-        target = const SizedBox();
-    }
-
-    Navigator.push(context, MaterialPageRoute(builder: (_) => target));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         headerAtas(context),
-        cardOutlet(context),
         Gap(10.h),
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        childAspectRatio: 0.9,
-                      ),
-                      itemCount: itemFood.length,
-                      itemBuilder: (context, index) {
-                        final card = itemFood[index];
-                        return GestureDetector(
-                          onTap: () => openCardPage(context, card.nama),
-                          child: CardHome(
-                            img: card.img,
-                            nama: card.nama,
-                          ),
-                        );
-                      },
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              return FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
                     ),
+                    itemCount: itemFood.length,
+                    itemBuilder: (context, index) {
+                      final card = itemFood[index];
+                      return CardHome(
+                        img: card.img,
+                        nama: card.nama,
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
       ],
