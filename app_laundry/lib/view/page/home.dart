@@ -17,6 +17,7 @@ import 'package:app_laundry/view/page/sekuriti.dart';
 import 'package:app_laundry/view/page/outlet.dart';
 import 'package:app_laundry/view/page/transaksi.dart';
 import 'package:app_laundry/view/page/pengaturan.dart';
+import 'package:app_laundry/view/page/profile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -201,15 +202,30 @@ class _HomeContentState extends State<_HomeContent>
                     fontFamily: 'Serif',
                   ),
                 ),
-                Container(
-                  height: 35,
-                  width: 35,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF9AC6E8),
-                  ),
-                  child: const Icon(Icons.person, color: Colors.white, size: 22),
-                ),
+GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ProfilePage(),
+      ),
+    );
+  },
+  child: Container(
+    height: 35,
+    width: 35,
+    decoration: const BoxDecoration(
+      shape: BoxShape.circle,
+      color: Color(0xFF9AC6E8),
+    ),
+    child: const Icon(
+      Icons.person,
+      color: Colors.white,
+      size: 22,
+    ),
+  ),
+),
+
               ],
             ),
           ),
