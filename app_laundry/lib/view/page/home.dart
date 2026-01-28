@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
   bool isMenuOpen = false;
 
+  // footer pages
   final List<Widget> mainPages = const [
     _HomeContent(),
     RiwayatTransaksi(),
@@ -82,20 +83,24 @@ class _HomePageState extends State<HomePage> {
 
     return GestureDetector(
       onTap: () => setState(() => selectedIndex = index),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(iconPath, height: 25, width: 25),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: active ? Colors.white : Colors.white70,
-              fontWeight: active ? FontWeight.bold : FontWeight.normal,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(iconPath, height: 25, width: 25),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: active ? Colors.white : Colors.white70,
+                fontWeight: active ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -130,8 +135,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     title: const Text(
                       'Menu',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                   const Divider(),
@@ -147,7 +151,6 @@ class _HomePageState extends State<HomePage> {
                         menuItem('Pengaturan'),
                         menuItem('Sekuriti'),
                         menuItem('Ganti Password'),
-                        menuItem('Logout'),
                       ],
                     ),
                   ),
@@ -172,7 +175,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void openMenuPage(String title) {
-    Widget page;
+    late Widget page;
+
     switch (title) {
       case 'Layanan':
         page = const LayananPage();
@@ -236,7 +240,9 @@ class _HomeContentState extends State<_HomeContent>
     );
 
     _fadeAnimation =
-        Tween<double>(begin: 0, end: 1).animate(_controller);
+        Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
 
     _controller.forward();
   }
@@ -247,7 +253,7 @@ class _HomeContentState extends State<_HomeContent>
     super.dispose();
   }
 
-  // HEADER
+  // ================= HEADER =================
   Widget headerAtas(BuildContext context) {
     return Stack(
       children: [
@@ -259,6 +265,19 @@ class _HomeContentState extends State<_HomeContent>
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(25),
               bottomRight: Radius.circular(25),
+            ),
+          ),
+          child: const Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: EdgeInsets.only(left: 20, bottom: 10),
+              child: Text(
+                "Omzet Hari ini : Rp. 0",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ),
@@ -282,8 +301,7 @@ class _HomeContentState extends State<_HomeContent>
                         context.findAncestorStateOfType<_HomePageState>();
                     home?.setState(() => home.isMenuOpen = true);
                   },
-                  child:
-                      const Icon(Icons.more_vert, color: Colors.white),
+                  child: const Icon(Icons.menu, color: Colors.white),
                 ),
                 const Text(
                   "Laundryque",
@@ -313,40 +331,145 @@ class _HomeContentState extends State<_HomeContent>
     );
   }
 
+  // ================= CARD OUTLET =================
+  Widget cardOutlet(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const OutletPage()),
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF5A86AE),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    "Nama Outlet",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    "Alamat Outlet",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ================= GRID NAV =================
+  void openCardPage(BuildContext context, String nama) {
+    late Widget target;
+
+    switch (nama) {
+      case 'Layanan':
+        target = const LayananPage();
+        break;
+      case 'Laporan':
+        target = const LaporanPage();
+        break;
+      case 'Riwayat':
+        target = const RiwayatPage();
+        break;
+      case 'Pengeluaran':
+        target = const PengeluaranPage();
+        break;
+      case 'Pelanggan':
+        target = const PelangganPage();
+        break;
+      case 'Kasir':
+        target = const KasirPage();
+        break;
+      case 'Parfum':
+        target = const ParfumPage();
+        break;
+      case 'Satuan':
+        target = const SatuanPage();
+        break;
+      case 'Sekuriti':
+        target = const SekuritiPage();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => target),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         headerAtas(context),
+        cardOutlet(context),
         Gap(10.h),
         Expanded(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 10,
-                      crossAxisSpacing: 10,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                        childAspectRatio: 0.9,
+                      ),
+                      itemCount: itemFood.length,
+                      itemBuilder: (context, index) {
+                        final card = itemFood[index];
+                        return GestureDetector(
+                          onTap: () => openCardPage(context, card.nama),
+                          child: CardHome(
+                            img: card.img,
+                            nama: card.nama,
+                          ),
+                        );
+                      },
                     ),
-                    itemCount: itemFood.length,
-                    itemBuilder: (context, index) {
-                      final card = itemFood[index];
-                      return CardHome(
-                        img: card.img,
-                        nama: card.nama,
-                      );
-                    },
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],
