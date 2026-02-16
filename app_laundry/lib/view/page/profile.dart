@@ -1,7 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
 
   @override
   Widget build(BuildContext context) {
@@ -110,10 +120,19 @@ class ProfilePage extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: Colors.grey.shade300,
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 60,
-                      color: Colors.white,
+                    child: ClipOval(
+                      child: _selectedImage != null
+                          ? Image.file(
+                              _selectedImage!,
+                              fit: BoxFit.cover,
+                              width: 120,
+                              height: 120,
+                            )
+                          : const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.white,
+                            ),
                     ),
                   ),
 
@@ -203,7 +222,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   // ================= BOTTOM SHEET CAMERA =================
-  static void _showImageOption(BuildContext context) {
+  void _showImageOption(BuildContext context) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -218,17 +237,33 @@ class ProfilePage extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.camera_alt),
                 title: const Text('Ambil dari Kamera'),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  // TODO: open camera
+
+                  final XFile? image =
+                      await _picker.pickImage(source: ImageSource.camera);
+
+                  if (image != null) {
+                    setState(() {
+                      _selectedImage = File(image.path);
+                    });
+                  }
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Upload dari Galeri'),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  // TODO: open gallery
+
+                  final XFile? image =
+                      await _picker.pickImage(source: ImageSource.gallery);
+
+                  if (image != null) {
+                    setState(() {
+                      _selectedImage = File(image.path);
+                    });
+                  }
                 },
               ),
             ],

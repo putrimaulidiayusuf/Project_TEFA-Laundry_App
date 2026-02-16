@@ -18,6 +18,7 @@ import 'package:app_laundry/view/page/outlet.dart';
 import 'package:app_laundry/view/page/transaksi.dart';
 import 'package:app_laundry/view/page/pengaturan.dart';
 import 'package:app_laundry/view/page/profile.dart';
+import 'package:app_laundry/view/page/navbar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,7 +29,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
-  bool isMenuOpen = false;
 
   // footer pages
   final List<Widget> mainPages = const [
@@ -40,14 +40,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          IndexedStack(
-            index: selectedIndex,
-            children: mainPages,
-          ),
-          if (isMenuOpen) sideMenu(context),
-        ],
+      body: IndexedStack(
+        index: selectedIndex,
+        children: mainPages,
       ),
       bottomNavigationBar: footerBar(),
     );
@@ -102,114 +97,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-    );
-  }
-
-  // ================= SIDE MENU =================
-  Widget sideMenu(BuildContext context) {
-    return Stack(
-      children: [
-        GestureDetector(
-          onTap: () => setState(() => isMenuOpen = false),
-          child: Container(color: Colors.black45),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.75,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () =>
-                          setState(() => isMenuOpen = false),
-                    ),
-                    title: const Text(
-                      'Menu',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(),
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        menuItem('Layanan'),
-                        menuItem('Parfum'),
-                        menuItem('Pelanggan'),
-                        menuItem('Riwayat'),
-                        menuItem('Pengeluaran'),
-                        menuItem('Laporan'),
-                        menuItem('Pengaturan'),
-                        menuItem('Sekuriti'),
-                        menuItem('Ganti Password'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget menuItem(String title) {
-    return ListTile(
-      leading: CircleAvatar(backgroundColor: Colors.grey.shade300),
-      title: Text(title),
-      onTap: () {
-        setState(() => isMenuOpen = false);
-        openMenuPage(title);
-      },
-    );
-  }
-
-  void openMenuPage(String title) {
-    late Widget page;
-
-    switch (title) {
-      case 'Layanan':
-        page = const LayananPage();
-        break;
-      case 'Parfum':
-        page = const ParfumPage();
-        break;
-      case 'Pelanggan':
-        page = const PelangganPage();
-        break;
-      case 'Riwayat':
-        page = const RiwayatPage();
-        break;
-      case 'Pengeluaran':
-        page = const PengeluaranPage();
-        break;
-      case 'Laporan':
-        page = const LaporanPage();
-        break;
-      case 'Pengaturan':
-        page = const PengaturanPage();
-        break;
-      case 'Sekuriti':
-      case 'Ganti Password':
-        page = const SekuritiPage();
-        break;
-      default:
-        return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => page),
     );
   }
 }
@@ -295,14 +182,20 @@ class _HomeContentState extends State<_HomeContent>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // 🔥 FIX OVERLAY NAVBAR
                 GestureDetector(
                   onTap: () {
-                    final home =
-                        context.findAncestorStateOfType<_HomePageState>();
-                    home?.setState(() => home.isMenuOpen = true);
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        opaque: false,
+                        barrierColor: Colors.black.withOpacity(0.3),
+                        pageBuilder: (_, __, ___) => const NavbarPage(),
+                      ),
+                    );
                   },
                   child: const Icon(Icons.menu, color: Colors.white),
                 ),
+
                 const Text(
                   "Laundryque",
                   style: TextStyle(
