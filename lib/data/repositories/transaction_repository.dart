@@ -7,7 +7,8 @@ class TransactionRepository {
 
   TransactionRepository(this.db);
 
-  Future<void> createFull({
+  // FIX: return invoice string agar bisa ditampilkan di struk
+  Future<String> createFull({
     required int customerId,
     required List<CartItem> items,
     required String keterangan,
@@ -42,12 +43,15 @@ class TransactionRepository {
                 qty: Value(e.qty),
                 price: Value(e.serviceType.price),
                 perfumeId: Value(e.perfume?.id),
-                keterangan: Value(keterangan.isEmpty ? null : keterangan),
+                keterangan:
+                    Value(keterangan.isEmpty ? null : keterangan),
                 tanggalMasuk: Value(tanggalMasuk),
                 estimasiSelesai: Value(estimasiSelesai),
               ))
           .toList(),
     );
+
+    return invoice; // ← kembalikan invoice sebagai noOrder
   }
 
   /// Legacy method — retained for backward compat

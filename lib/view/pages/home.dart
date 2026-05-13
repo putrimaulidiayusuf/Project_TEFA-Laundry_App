@@ -15,7 +15,7 @@ import 'package:app_laundry/view/pages/kasir.dart';
 import 'package:app_laundry/view/pages/parfum.dart';
 import 'package:app_laundry/view/pages/satuan.dart';
 import 'package:app_laundry/view/pages/sekuriti.dart';
-import 'package:app_laundry/view/pages/outlet.dart';
+import 'package:app_laundry/view/pages/outlet.dart' hide OutletPage;
 import 'package:app_laundry/view/pages/transaksi.dart';
 import 'package:app_laundry/view/pages/pengaturan.dart';
 import 'package:app_laundry/view/pages/profile.dart';
@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> mainPages = const [
     _HomeContent(),
     RiwayatTransaksi(),
-    PengaturanPage(),
+    OutletPage(),
   ];
 
   @override
@@ -360,78 +360,91 @@ class _HomeContentState extends State<_HomeContent>
 
   // ================= CARD OUTLET =================
   Widget cardOutlet(BuildContext context) {
-    final outlet = context.watch<OutletVM>();
+  final outlet = context.watch<OutletVM>();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const OutletPage()),
-          );
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: _blueSoft,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  image: (outlet.fotoPath != null && File(outlet.fotoPath!).existsSync())
-                      ? DecorationImage(
-                          image: FileImage(File(outlet.fotoPath!)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: (outlet.fotoPath == null || !File(outlet.fotoPath!).existsSync())
-                    ? const Icon(Icons.store, color: _blueSoft, size: 28)
-                    : null,
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    child: InkWell(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const OutletPage()),
+        );
+        // Reload setelah balik dari OutletPage
+        if (mounted) context.read<OutletVM>().load();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: _blueSoft,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            // ── FOTO OUTLET ──
+            Container(
+              height: 50,
+              width: 50,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      outlet.nama.isNotEmpty ? outlet.nama : "Nama Outlet",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      outlet.alamat.isNotEmpty ? outlet.alamat : "Alamat Outlet",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: (outlet.fotoPath != null &&
+                        File(outlet.fotoPath!).existsSync())
+                    ? Image.file(
+                        File(outlet.fotoPath!),
+                        fit: BoxFit.cover,
+                        // key untuk bust cache tiap fotoPath berubah
+                        key: ValueKey(outlet.fotoPath),
+                        cacheWidth: 100,
+                      )
+                    : const Icon(Icons.store, color: _blueSoft, size: 28),
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.edit, color: Colors.white70, size: 18),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+
+            // ── NAMA & ALAMAT ──
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    outlet.nama.isNotEmpty
+                        ? outlet.nama
+                        : "Nama Outlet Belum Diatur",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    outlet.alamat.isNotEmpty
+                        ? outlet.alamat
+                        : "Alamat belum diatur",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.edit, color: Colors.white70, size: 18),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ================= GRID NAV =================
   void openCardPage(BuildContext context, String nama) {

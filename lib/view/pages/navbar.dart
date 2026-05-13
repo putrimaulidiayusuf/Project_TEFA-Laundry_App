@@ -106,7 +106,7 @@ class NavbarPage extends StatelessWidget {
                           context,
                           title: 'Pengaturan',
                           iconPath: 'assets/pengaturan.png',
-                          page: const PengaturanPage(),
+                          page: const OutletPage(),
                         ),
                         menuItem(
                           context,

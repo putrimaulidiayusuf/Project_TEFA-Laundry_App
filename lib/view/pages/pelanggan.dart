@@ -53,6 +53,25 @@ class PelangganPage extends StatelessWidget {
                               ),
                         title: Text(pelanggan.name),
                         subtitle: Text(pelanggan.phone),
+                        
+                        // ─── BAGIAN YANG DITAMBAHKAN (ONTAP) ───
+                        onTap: () {
+                          // 1. Simpan pelanggan ke ViewModel
+                          context.read<CustomerVM>().pilihPelanggan(pelanggan);
+                          
+                          // 2. Munculkan pesan singkat
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${pelanggan.name} dipilih untuk transaksi'),
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                          
+                          // 3. Kembali ke halaman sebelumnya (halaman kasir)
+                          Navigator.pop(context);
+                        },
+                        // ───────────────────────────────────────
+
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () {

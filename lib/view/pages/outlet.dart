@@ -7,6 +7,8 @@ import 'package:app_laundry/view/viewmodels/outlet_vm.dart';
 import 'package:app_laundry/view/pages/outlet_template.dart';
 import 'package:app_laundry/view/pages/outlet_printer.dart';
 import 'package:app_laundry/view/pages/outlet_metode.dart';
+import 'package:get/get.dart';
+import 'package:app_laundry/controllers/printer_controller.dart';
 
 const _blue = Color(0xFF003B73);
 const _bg = Color(0xFFF0F4F8);
@@ -296,41 +298,42 @@ class _OutletPageState extends State<OutletPage> {
   }
 
   Widget _buildNavRow(String label, IconData icon, VoidCallback onTap,
-      {String? subtitle}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: _blue, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w500, fontSize: 14)),
-                  if (subtitle != null)
-                    Text(subtitle,
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.red.shade400)),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: Colors.grey),
-          ],
-        ),
+    {String? subtitle, Color? subtitleColor}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade200),
       ),
-    );
-  }
+      child: Row(
+        children: [
+          Icon(icon, color: _blue, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 14)),
+                if (subtitle != null)
+                  Text(subtitle,
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: subtitleColor ?? Colors.red.shade400)), // ← warna dinamis
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right, color: Colors.grey),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildSectionTitle(String title) {
     return Padding(
@@ -407,17 +410,25 @@ class _OutletPageState extends State<OutletPage> {
                                         )),
                               ),
                             ),
-                            _buildNavRow(
-                              'Printer',
-                              Icons.print_outlined,
-                              () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const OutletPrinterPage()),
-                              ),
-                              subtitle: 'Tidak Ada Printer yang terhubung!',
-                            ),
-                            const SizedBox(height: 16),
+                            Obx(() {
+  final printer = Get.find<PrinterController>();
+  final isConnected = printer.connectedMac.value != null;
+  final connectedName = printer.connectedName.value ?? '';
+
+  return _buildNavRow(
+    'Printer',
+    Icons.print_outlined,
+    () => Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => const OutletPrinterPage()),
+    ),
+    subtitle: isConnected
+        ? 'Terhubung ke $connectedName'
+        : 'Tidak Ada Printer yang terhubung!',
+    subtitleColor: isConnected ? Colors.green : Colors.red.shade400,
+  );
+}),
 
                             // ── PENGATURAN PRINTER ────────────────────────
                             _buildSectionTitle('Pengaturan Printer'),

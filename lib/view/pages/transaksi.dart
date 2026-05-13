@@ -1,15 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/transaksi_vm.dart';
 import '../viewmodels/customer_vm.dart';
+import '../viewmodels/outlet_vm.dart';
 import '../widgets/header.dart';
 import 'pilih_layanan_page.dart';
 import 'transaksi_berhasil_page.dart';
 
-const _gold = Color(0xFF0A4174);
+const _gold  = Color(0xFF0A4174);
 const _green = Color(0xFF063059);
 
 String _fmt(double v) =>
@@ -31,9 +33,9 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
   }
 
   Future<void> _pickDate(BuildContext context, bool isMasuk) async {
-    final vm = context.read<TransaksiVM>();
+    final vm      = context.read<TransaksiVM>();
     final initial = isMasuk ? vm.tanggalMasuk : vm.estimasiSelesai;
-    final picked = await showDatePicker(
+    final picked  = await showDatePicker(
       context: context,
       initialDate: initial,
       firstDate: DateTime(2020),
@@ -45,8 +47,8 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
       initialTime: TimeOfDay.fromDateTime(initial),
     );
     if (time == null || !mounted) return;
-    final dt =
-        DateTime(picked.year, picked.month, picked.day, time.hour, time.minute);
+    final dt = DateTime(
+        picked.year, picked.month, picked.day, time.hour, time.minute);
     if (isMasuk) {
       vm.setTanggalMasuk(dt);
     } else {
@@ -74,8 +76,8 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20)),
           child: Container(
             decoration: BoxDecoration(
               color: _gold,
@@ -156,7 +158,8 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                       const SizedBox(height: 4),
                       const Text(
                         '(Jika ingin DP nya dulu maka masuk jumlah DP)',
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                        style:
+                            TextStyle(fontSize: 11, color: Colors.grey),
                       ),
                       const SizedBox(height: 16),
                       SizedBox(
@@ -167,13 +170,15 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 14),
                           ),
                           onPressed: () async {
                             Navigator.pop(ctx);
-                            await _doCheckout(context,
-                                double.tryParse(bayarCtrl.text) ?? vm.total);
+                            await _doCheckout(
+                              context,
+                              double.tryParse(bayarCtrl.text) ?? vm.total,
+                            );
                           },
                           child: const Text('Simpan',
                               style: TextStyle(fontSize: 15)),
@@ -191,23 +196,54 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
   }
 
   Future<void> _doCheckout(BuildContext ctx, double jumlahBayar) async {
-    final vm = ctx.read<TransaksiVM>();
+    final vm        = ctx.read<TransaksiVM>();
+    final outletVM  = ctx.read<OutletVM>();
     final totalHarga = vm.total;
-    final nav = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final nav        = Navigator.of(context);
+    final messenger  = ScaffoldMessenger.of(context);
+
+    // ── FIX: Simpan semua data SEBELUM checkout() memanggil reset() ──
+    final namaPelanggan    = vm.pelanggan?.name ?? '-';
+    final tanggal          = DateFormat('dd/MM/yyyy HH:mm').format(vm.tanggalMasuk);
+    final estimasiSelesai  = DateFormat('dd/MM/yyyy HH:mm').format(vm.estimasiSelesai);
+    final namaKasir        = ''; // isi dari ProfileVM kalau ada
+    final metodeBayar      = vm.metodeBayar;
+    final keterangan       = vm.keterangan;
+    final diskon           = vm.diskon.toInt();
+    final kembalian        = (jumlahBayar - totalHarga).toInt();
+    final statusTransaksi  = jumlahBayar >= totalHarga ? 'Lunas' : 'DP';
+
+    // Snapshot items sebelum reset
+    final strukItems = vm.items.map((item) => {
+      'nama':     '${item.serviceType.name} (${item.service.name})',
+      'qty':      item.qty % 1 == 0 ? item.qty.toInt() : item.qty,
+      'harga':    item.serviceType.price.toInt(),
+      'subtotal': item.subtotal.toInt(),
+    }).toList();
+
     try {
-      await vm.checkout(jumlahBayar: jumlahBayar);
+      // checkout() sekarang return noOrder dan baru reset di dalamnya
+      final noOrder = await vm.checkout(jumlahBayar: jumlahBayar);
+
       if (!mounted) return;
-      // push (bukan replace) agar dari halaman berhasil bisa pop kembali ke sini
-      nav.push(
-        MaterialPageRoute(
-          builder: (_) => TransaksiBerhasilPage(
-            totalHarga: totalHarga,
-            jumlahBayar: jumlahBayar,
-            onBuatBaru: () => nav.pop(), // pop kembali ke halaman transaksi
-          ),
+
+      nav.push(MaterialPageRoute(
+        builder: (_) => TransaksiBerhasilPage(
+          totalHarga:      totalHarga,
+          jumlahBayar:     jumlahBayar,
+          onBuatBaru:      () => nav.pop(),
+          pelanggan:       namaPelanggan,    // ✓ sudah di-snapshot
+          noOrder:         noOrder,          // ✓ dari DB
+          tanggal:         tanggal,          // ✓ sudah di-snapshot
+          estimasiSelesai: estimasiSelesai,  // ✓ sudah di-snapshot
+          namaKasir:       namaKasir,
+          metodeBayar:     metodeBayar,      // ✓ sudah di-snapshot
+          statusTransaksi: statusTransaksi,
+          keterangan:      keterangan,       // ✓ sudah di-snapshot
+          diskon:          diskon,           // ✓ sudah di-snapshot
+          items:           strukItems,       // ✓ sudah di-snapshot
         ),
-      );
+      ));
     } catch (e) {
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -216,8 +252,9 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<TransaksiVM>();
+    final vm  = context.watch<TransaksiVM>();
     final fmt = DateFormat('dd/MM/yyyy – HH:mm');
+    final outletVM = context.watch<OutletVM>();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -243,7 +280,6 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                       ),
                       child: Row(
                         children: [
-                          // Foto
                           CircleAvatar(
                             radius: 26,
                             backgroundColor: Colors.grey.shade200,
@@ -272,8 +308,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                                       Row(
                                         children: [
                                           const Icon(Icons.phone,
-                                              size: 13,
-                                              color: _gold),
+                                              size: 13, color: _gold),
                                           const SizedBox(width: 4),
                                           Text(vm.pelanggan!.phone,
                                               style: const TextStyle(
@@ -299,10 +334,9 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: const [
-                            Icon(Icons.receipt_long,
-                                color: _gold, size: 20),
+                        const Row(
+                          children: [
+                            Icon(Icons.receipt_long, color: _gold, size: 20),
                             SizedBox(width: 8),
                             Text('Detail Order',
                                 style: TextStyle(
@@ -343,7 +377,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                     )
                   else
                     ...vm.items.asMap().entries.map((e) {
-                      final idx = e.key;
+                      final idx  = e.key;
                       final item = e.value;
                       return _CartItemCard(
                         item: item,
@@ -374,7 +408,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                                 onChanged: vm.setKeterangan,
                                 textAlign: TextAlign.right,
                                 decoration: const InputDecoration(
-                                  hintText: 'ada noda',
+                                  hintText: 'Contoh: ada noda kecap',
                                   border: InputBorder.none,
                                 ),
                                 style: const TextStyle(fontSize: 13),
@@ -401,7 +435,8 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                                         fontWeight: FontWeight.w500)),
                                 const Spacer(),
                                 Text(fmt.format(vm.tanggalMasuk),
-                                    style: const TextStyle(fontSize: 13)),
+                                    style:
+                                        const TextStyle(fontSize: 13)),
                                 const Icon(Icons.arrow_drop_down,
                                     color: Colors.grey),
                               ],
@@ -427,7 +462,8 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                                         fontWeight: FontWeight.w500)),
                                 const Spacer(),
                                 Text(fmt.format(vm.estimasiSelesai),
-                                    style: const TextStyle(fontSize: 13)),
+                                    style:
+                                        const TextStyle(fontSize: 13)),
                                 const Icon(Icons.arrow_drop_down,
                                     color: Colors.grey),
                               ],
@@ -475,11 +511,12 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
 
                         const SizedBox(height: 12),
 
-                        // Metode Bayar
+                        // Metode Bayar — dinamis dari OutletVM
                         Row(
                           children: [
                             const Text('Metode Bayar',
-                                style: TextStyle(fontWeight: FontWeight.w500)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500)),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Container(
@@ -490,18 +527,19 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: DropdownButton<String>(
-                                  value: vm.metodeBayar,
+                                  value: outletVM.metodeBayar
+                                          .contains(vm.metodeBayar)
+                                      ? vm.metodeBayar
+                                      : outletVM.metodeBayar.first,
                                   isExpanded: true,
                                   underline: const SizedBox(),
-                                  items: const [
-                                    DropdownMenuItem(
-                                        value: 'Cash', child: Text('Cash')),
-                                    DropdownMenuItem(
-                                        value: 'Transfer',
-                                        child: Text('Transfer')),
-                                    DropdownMenuItem(
-                                        value: 'QRIS', child: Text('QRIS')),
-                                  ],
+                                  // FIX: pakai metode dari OutletVM, bukan hardcoded
+                                  items: outletVM.metodeBayar
+                                      .map((m) => DropdownMenuItem(
+                                            value: m,
+                                            child: Text(m),
+                                          ))
+                                      .toList(),
                                   onChanged: (v) =>
                                       vm.setMetodeBayar(v ?? 'Cash'),
                                 ),
@@ -531,7 +569,10 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
             decoration: const BoxDecoration(
               color: Colors.white,
               boxShadow: [
-                BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, -2))
+                BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 8,
+                    offset: Offset(0, -2))
               ],
             ),
             child: Row(
@@ -541,8 +582,8 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text('Total Harga',
-                        style:
-                            TextStyle(fontSize: 12, color: Colors.black54)),
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.black54)),
                     Text(
                       _fmt(vm.total),
                       style: const TextStyle(
@@ -574,14 +615,15 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
   }
 
   void _showPilihPelanggan(BuildContext context) {
-    final vm = context.read<CustomerVM>();
+    final vm         = context.read<CustomerVM>();
     final searchCtrl = TextEditingController();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => DraggableScrollableSheet(
           initialChildSize: 0.7,
@@ -656,7 +698,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
 
 // ===== Cart Item Card =====
 class _CartItemCard extends StatelessWidget {
-  final CartItem item; // CartItem from transaksi_vm
+  final CartItem item;
   final VoidCallback onDelete;
 
   const _CartItemCard({required this.item, required this.onDelete});
@@ -672,7 +714,6 @@ class _CartItemCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Gambar
           Container(
             width: 52,
             height: 52,
@@ -680,32 +721,29 @@ class _CartItemCard extends StatelessWidget {
               color: const Color(0xFFE3EEF7),
               borderRadius: BorderRadius.circular(8),
             ),
-            child:
-                (item.serviceType.image != null &&
-                        File(item.serviceType.image!).existsSync())
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(File(item.serviceType.image!),
-                            fit: BoxFit.cover))
-                    : const Icon(Icons.inventory_2,
-                        color: Color(0xFF0A4174), size: 26),
+            child: (item.serviceType.image != null &&
+                    File(item.serviceType.image!).existsSync())
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(File(item.serviceType.image!),
+                        fit: BoxFit.cover))
+                : const Icon(Icons.inventory_2,
+                    color: Color(0xFF0A4174), size: 26),
           ),
           const SizedBox(width: 10),
-
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${item.serviceType.name} (${item.service.name} )',
+                  '${item.serviceType.name} (${item.service.name})',
                   style: const TextStyle(
                       fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 Text(
                   'Rp.${item.serviceType.price.toInt()} /${item.unit.name}',
-                  style:
-                      const TextStyle(fontSize: 12, color: Colors.black54),
+                  style: const TextStyle(
+                      fontSize: 12, color: Colors.black54),
                 ),
                 if (item.perfume != null)
                   Row(
@@ -725,13 +763,12 @@ class _CartItemCard extends StatelessWidget {
               ],
             ),
           ),
-
-          // Qty + delete
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               IconButton(
-                  icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                  icon: const Icon(Icons.close,
+                      size: 16, color: Colors.red),
                   onPressed: onDelete,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints()),
@@ -777,8 +814,8 @@ class _DiskonRowState extends State<_DiskonRow> {
             },
             decoration: InputDecoration(
               labelText: 'Diskon /Rupiah',
-              labelStyle: const TextStyle(
-                  color: _gold, fontSize: 12),
+              labelStyle:
+                  const TextStyle(color: _gold, fontSize: 12),
               filled: true,
               fillColor: const Color(0xFFF5F5F5),
               border: OutlineInputBorder(

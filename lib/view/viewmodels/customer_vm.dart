@@ -10,6 +10,15 @@ class CustomerVM extends ChangeNotifier {
   List<Customer> customers = [];
   List<Customer> filtered = [];
 
+  // Variabel untuk menyimpan pelanggan yang sedang dipilih saat transaksi
+  Customer? pelangganTerpilih;
+
+  // Fungsi untuk menetapkan pelanggan yang dipilih
+  void pilihPelanggan(Customer customer) {
+    pelangganTerpilih = customer;
+    notifyListeners();
+  }
+
   Future<void> load() async {
     customers = await repo.getCustomers();
     filtered = customers;

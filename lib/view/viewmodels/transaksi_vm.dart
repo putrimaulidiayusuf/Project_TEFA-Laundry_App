@@ -113,7 +113,7 @@ class TransaksiVM extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Reset / Checkout ─────────────────────────────────────
+  // ── Reset ────────────────────────────────────────────────
   void reset() {
     _items.clear();
     _pelanggan = null;
@@ -127,11 +127,14 @@ class TransaksiVM extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> checkout({double? jumlahBayar}) async {
+  // ── Checkout ─────────────────────────────────────────────
+  // FIX: kembalikan noOrder agar bisa ditampilkan di struk
+  // SEBELUM reset() dipanggil, simpan dulu semua data yang dibutuhkan
+  Future<String> checkout({double? jumlahBayar}) async {
     if (_pelanggan == null) throw Exception('Pelanggan belum dipilih');
     if (_items.isEmpty) throw Exception('Keranjang masih kosong');
 
-    await _repo.createFull(
+    final noOrder = await _repo.createFull(
       customerId: _pelanggan!.id,
       items: _items,
       keterangan: _keterangan,
@@ -143,6 +146,8 @@ class TransaksiVM extends ChangeNotifier {
       jumlahBayar: jumlahBayar ?? total,
     );
 
-    reset();
+    reset(); // reset SETELAH dapat noOrder
+
+    return noOrder; // langsung pakai invoice dari repository
   }
 }
