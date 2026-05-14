@@ -62,7 +62,7 @@ void main() async {
         ChangeNotifierProvider(create: (c) => UnitVM(c.read())..load()),
         ChangeNotifierProvider(create: (c) => ServiceVM(c.read())..load()),
         ChangeNotifierProvider(create: (c) => ServiceTypeVM(c.read())),
-        ChangeNotifierProvider(create: (c) => KasirVM(c.read())),
+        ChangeNotifierProvider(create: (c) => KasirVM(c.read())..load()),
         ChangeNotifierProvider(create: (c) => HomeVM(c.read())),
         ChangeNotifierProvider(create: (c) => PengeluaranVM(c.read())..load()),
         ChangeNotifierProvider(create: (c) => ProfileVM(c.read())),
