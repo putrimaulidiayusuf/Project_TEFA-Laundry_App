@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'transaksi_widgets.dart';
 
 class TabSiapAmbil extends StatelessWidget {
-  const TabSiapAmbil({super.key});
+  final String query;
+  const TabSiapAmbil({super.key, this.query = ''});
 
   @override
   Widget build(BuildContext context) {
-    return const TabRiwayat(
+    return TabRiwayat(
+      query: query,
       status: 'siap_ambil',
-      statusColor: Color(0xFF1565C0),
+      statusColor: const Color(0xFF1565C0),
       statusLabel: 'Siap Ambil',
-      nextStatuses: ['selesai', 'batal'],
+      nextStatuses: const ['selesai', 'batal'],
     );
   }
 }

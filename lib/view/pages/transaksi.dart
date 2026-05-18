@@ -11,8 +11,9 @@ import '../widgets/header.dart';
 import 'pilih_layanan_page.dart';
 import 'transaksi_berhasil_page.dart';
 
-const _gold  = Color(0xFF0A4174);
-const _green = Color(0xFF063059);
+// ── Style dari kode kedua ──
+const _primary = Color(0xFF1565C0); // Colors.blue.shade800
+const _green   = Color(0xFF388E3C); // Colors.green
 
 String _fmt(double v) =>
     'Rp. ${NumberFormat('#,###', 'id_ID').format(v.toInt())}';
@@ -80,7 +81,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
               borderRadius: BorderRadius.circular(20)),
           child: Container(
             decoration: BoxDecoration(
-              color: _gold,
+              color: _primary,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -132,7 +133,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                         child: Row(
                           children: [
                             const Icon(Icons.account_balance_wallet,
-                                color: _gold, size: 20),
+                                color: _primary, size: 20),
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextField(
@@ -166,7 +167,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _green,
+                            backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
@@ -232,16 +233,16 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
           totalHarga:      totalHarga,
           jumlahBayar:     jumlahBayar,
           onBuatBaru:      () => nav.pop(),
-          pelanggan:       namaPelanggan,    // ✓ sudah di-snapshot
-          noOrder:         noOrder,          // ✓ dari DB
-          tanggal:         tanggal,          // ✓ sudah di-snapshot
-          estimasiSelesai: estimasiSelesai,  // ✓ sudah di-snapshot
+          pelanggan:       namaPelanggan,
+          noOrder:         noOrder,
+          tanggal:         tanggal,
+          estimasiSelesai: estimasiSelesai,
           namaKasir:       namaKasir,
-          metodeBayar:     metodeBayar,      // ✓ sudah di-snapshot
+          metodeBayar:     metodeBayar,
           statusTransaksi: statusTransaksi,
-          keterangan:      keterangan,       // ✓ sudah di-snapshot
-          diskon:          diskon,           // ✓ sudah di-snapshot
-          items:           strukItems,       // ✓ sudah di-snapshot
+          keterangan:      keterangan,
+          diskon:          diskon,
+          items:           strukItems,
         ),
       ));
     } catch (e) {
@@ -260,100 +261,118 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          const HeaderWidget(title: 'Checkout'),
+          const HeaderWidget(title: 'Riwayat transaksi'),
 
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ===== Card Pelanggan =====
-                  GestureDetector(
-                    onTap: () => _showPilihPelanggan(context),
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.grey.shade200),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 26,
-                            backgroundColor: Colors.grey.shade200,
-                            backgroundImage: (vm.pelanggan?.photo != null &&
-                                    File(vm.pelanggan!.photo!).existsSync())
-                                ? FileImage(File(vm.pelanggan!.photo!))
-                                : null,
-                            child: vm.pelanggan?.photo == null
-                                ? const Icon(Icons.camera_alt,
-                                    color: Colors.grey)
-                                : null,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: vm.pelanggan == null
-                                ? const Text('Pilih Pelanggan',
-                                    style: TextStyle(color: Colors.grey))
-                                : Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(vm.pelanggan!.name,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15)),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.phone,
-                                              size: 13, color: _gold),
-                                          const SizedBox(width: 4),
-                                          Text(vm.pelanggan!.phone,
-                                              style: const TextStyle(
-                                                  fontSize: 13,
-                                                  color: Colors.black54)),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                          const Icon(Icons.arrow_forward_ios,
-                              size: 14, color: Colors.grey),
-                        ],
+                  const SizedBox(height: 20),
+
+                  // ===== Card Pelanggan — style kode 2 =====
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: GestureDetector(
+                      onTap: () => _showPilihPelanggan(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade800,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.white,
+                              backgroundImage: (vm.pelanggan?.photo != null &&
+                                      File(vm.pelanggan!.photo!).existsSync())
+                                  ? FileImage(File(vm.pelanggan!.photo!))
+                                  : null,
+                              child: vm.pelanggan?.photo == null
+                                  ? const Icon(Icons.person,
+                                      color: Colors.grey)
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: vm.pelanggan == null
+                                  ? const Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Pelanggan',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight:
+                                                    FontWeight.bold)),
+                                        Text(
+                                            'Silahkan pilih pelanggan terlebih dahulu',
+                                            style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 12)),
+                                      ],
+                                    )
+                                  : Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(vm.pelanggan!.name,
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight:
+                                                    FontWeight.bold)),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.phone,
+                                                size: 13,
+                                                color: Colors.white70),
+                                            const SizedBox(width: 4),
+                                            Text(vm.pelanggan!.phone,
+                                                style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color:
+                                                        Colors.white70)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () =>
+                                  _showPilihPelanggan(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.blue,
+                              ),
+                              child: const Text('Cari'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
 
-                  const Divider(height: 20),
+                  const SizedBox(height: 16),
 
-                  // ===== Detail Order Header =====
+                  // ===== Detail Order Header — style kode 2 =====
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.receipt_long, color: _gold, size: 20),
-                            SizedBox(width: 8),
-                            Text('Detail Order',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15)),
-                          ],
-                        ),
-                        TextButton.icon(
+                        const Text('Detail Order',
+                            style:
+                                TextStyle(fontWeight: FontWeight.bold)),
+                        ElevatedButton(
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) => const PilihLayananPage()),
+                                builder: (_) =>
+                                    const PilihLayananPage()),
                           ),
-                          icon: const Icon(Icons.add, size: 16),
-                          label: const Text('Tambah Layanan'),
-                          style: TextButton.styleFrom(
-                              foregroundColor: _gold),
+                          child: const Text('Tambah Layanan'),
                         ),
                       ],
                     ),
@@ -365,10 +384,11 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                       padding: EdgeInsets.symmetric(vertical: 24),
                       child: Center(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.search_off,
-                                size: 64, color: Colors.grey),
-                            SizedBox(height: 8),
+                                size: 90, color: Colors.grey),
+                            SizedBox(height: 10),
                             Text('Data Tidak di temukan',
                                 style: TextStyle(color: Colors.grey)),
                           ],
@@ -396,7 +416,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                         Row(
                           children: [
                             const Icon(Icons.note_alt_outlined,
-                                size: 18, color: _gold),
+                                size: 18, color: _primary),
                             const SizedBox(width: 8),
                             const Text('Keterangan :',
                                 style: TextStyle(
@@ -428,7 +448,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                             child: Row(
                               children: [
                                 const Icon(Icons.calendar_month,
-                                    size: 18, color: _gold),
+                                    size: 18, color: _primary),
                                 const SizedBox(width: 8),
                                 const Text('Tanggal Masuk :',
                                     style: TextStyle(
@@ -455,7 +475,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                             child: Row(
                               children: [
                                 const Icon(Icons.check_circle_outline,
-                                    size: 18, color: _gold),
+                                    size: 18, color: _primary),
                                 const SizedBox(width: 8),
                                 const Text('Estimasi Selesai :',
                                     style: TextStyle(
@@ -484,7 +504,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                                     horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: vm.langsungBayar
-                                      ? _gold
+                                      ? _primary
                                       : Colors.grey.shade200,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -533,7 +553,6 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                                       : outletVM.metodeBayar.first,
                                   isExpanded: true,
                                   underline: const SizedBox(),
-                                  // FIX: pakai metode dari OutletVM, bukan hardcoded
                                   items: outletVM.metodeBayar
                                       .map((m) => DropdownMenuItem(
                                             value: m,
@@ -562,49 +581,40 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
             ),
           ),
 
-          // ===== Footer Total + Bayar =====
+          // ===== Footer Total + Checkout — style kode 2 =====
           Container(
             padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 8,
-                    offset: Offset(0, -2))
-              ],
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade800,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text('Total Harga',
-                        style: TextStyle(
-                            fontSize: 12, color: Colors.black54)),
+                        style: TextStyle(color: Colors.white70)),
                     Text(
                       _fmt(vm.total),
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
-                const Spacer(),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
+                    backgroundColor: Colors.green,
                   ),
                   onPressed: () => _showKonfirmasi(context),
-                  child: const Text('Bayar',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text('Checkout',
+                      style: TextStyle(color: Colors.white70)),
                 ),
               ],
             ),
@@ -728,7 +738,7 @@ class _CartItemCard extends StatelessWidget {
                     child: Image.file(File(item.serviceType.image!),
                         fit: BoxFit.cover))
                 : const Icon(Icons.inventory_2,
-                    color: Color(0xFF0A4174), size: 26),
+                    color: _primary, size: 26),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -815,7 +825,7 @@ class _DiskonRowState extends State<_DiskonRow> {
             decoration: InputDecoration(
               labelText: 'Diskon /Rupiah',
               labelStyle:
-                  const TextStyle(color: _gold, fontSize: 12),
+                  const TextStyle(color: _primary, fontSize: 12),
               filled: true,
               fillColor: const Color(0xFFF5F5F5),
               border: OutlineInputBorder(
@@ -837,7 +847,7 @@ class _DiskonRowState extends State<_DiskonRow> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: !isPersen ? _gold : Colors.grey.shade200,
+                  color: !isPersen ? _primary : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -866,7 +876,7 @@ class _DiskonRowState extends State<_DiskonRow> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isPersen ? _gold : Colors.grey.shade200,
+                  color: isPersen ? _primary : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(

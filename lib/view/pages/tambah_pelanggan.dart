@@ -1,77 +1,99 @@
-import 'package:flutter/material.dart';
-import 'package:app_laundry/view/widgets/header.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:app_laundry/view/widgets/header.dart';
+
+// ─── Warna utama (sama dengan KasirPage) ─────────────────────────────────────
+const _blue1    = Color(0xFF0A4174);
+const _blueSoft = Color(0xFF5A86AE);
+const _bgColor  = Color(0xFFF4F6F8);
 
 class TambahPelangganPage extends StatefulWidget {
-  const TambahPelangganPage({super.key});
+  /// Jika [pelanggan] diisi → mode Edit, jika null → mode Tambah
+  final Map<String, dynamic>? pelanggan;
+
+  const TambahPelangganPage({super.key, this.pelanggan});
 
   @override
   State<TambahPelangganPage> createState() => _TambahPelangganPageState();
 }
 
 class _TambahPelangganPageState extends State<TambahPelangganPage> {
-  final TextEditingController _namaController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _noHpController = TextEditingController();
-  final TextEditingController _alamatController = TextEditingController();
-  File? _fotoProfil;
+  late final TextEditingController _namaController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _noHpController;
+  late final TextEditingController _alamatController;
+
+  File?   _fotoProfil;
   String? _jenisKelamin;
+  String? _existingFotoPath;
 
   final ImagePicker _picker = ImagePicker();
 
-  // ================= PILIH FOTO (BOTTOM SHEET) =================
+  bool get isEdit => widget.pelanggan != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.pelanggan;
+    _namaController   = TextEditingController(text: p?['nama']          ?? '');
+    _emailController  = TextEditingController(text: p?['email']         ?? '');
+    _noHpController   = TextEditingController(text: p?['noHp']          ?? '');
+    _alamatController = TextEditingController(text: p?['alamat']        ?? '');
+    _jenisKelamin     = p?['jenisKelamin'];
+    _existingFotoPath = p?['fotoProfil'];
+  }
+
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _emailController.dispose();
+    _noHpController.dispose();
+    _alamatController.dispose();
+    super.dispose();
+  }
+
+  // ── PILIH FOTO (logic tidak diubah) ─────────────────────────────────────────
   void _pilihFoto() {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Ambil dari Kamera'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final pickedFile =
-                      await _picker.pickImage(source: ImageSource.camera);
-                  if (pickedFile != null) {
-                    setState(() {
-                      _fotoProfil = File(pickedFile.path);
-                    });
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Upload dari Galeri'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final pickedFile =
-                      await _picker.pickImage(source: ImageSource.gallery);
-                  if (pickedFile != null) {
-                    setState(() {
-                      _fotoProfil = File(pickedFile.path);
-                    });
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Ambil dari Kamera'),
+              onTap: () async {
+                Navigator.pop(context);
+                final f = await _picker.pickImage(source: ImageSource.camera);
+                if (f != null) setState(() => _fotoProfil = File(f.path));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Upload dari Galeri'),
+              onTap: () async {
+                Navigator.pop(context);
+                final f = await _picker.pickImage(source: ImageSource.gallery);
+                if (f != null) setState(() => _fotoProfil = File(f.path));
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
+  // ── SIMPAN (logic tidak diubah) ──────────────────────────────────────────────
   void _simpan() {
-    final nama = _namaController.text.trim();
-    final email = _emailController.text.trim();
-    final noHp = _noHpController.text.trim();
+    final nama   = _namaController.text.trim();
+    final email  = _emailController.text.trim();
+    final noHp   = _noHpController.text.trim();
     final alamat = _alamatController.text.trim();
 
     if (nama.isEmpty ||
@@ -86,35 +108,106 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
     }
 
     final data = {
-      'nama': nama,
-      'email': email,
-      'noHp': noHp,
+      'nama'        : nama,
+      'email'       : email,
+      'noHp'        : noHp,
       'jenisKelamin': _jenisKelamin,
-      'alamat': alamat,
-      'fotoProfil': _fotoProfil?.path,
+      'alamat'      : alamat,
+      'fotoProfil'  : _fotoProfil?.path ?? _existingFotoPath,
     };
 
     Navigator.pop(context, data);
   }
 
-  Widget buildInputField({
+  // ── AVATAR (style KasirFormPage) ─────────────────────────────────────────────
+  Widget _buildAvatar() {
+    Widget avatarContent;
+
+    if (_fotoProfil != null) {
+      avatarContent = ClipOval(
+        child: Image.file(_fotoProfil!,
+            fit: BoxFit.cover, width: 110, height: 110),
+      );
+    } else if (_existingFotoPath != null &&
+        File(_existingFotoPath!).existsSync()) {
+      avatarContent = ClipOval(
+        child: Image.file(File(_existingFotoPath!),
+            fit: BoxFit.cover, width: 110, height: 110),
+      );
+    } else {
+      final initial = _namaController.text.isNotEmpty
+          ? _namaController.text[0].toUpperCase()
+          : '?';
+      avatarContent = Container(
+        width: 110,
+        height: 110,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: _blue1,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          initial,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        avatarContent,
+        GestureDetector(
+          onTap: _pilihFoto,
+          child: Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _blueSoft,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child:
+                const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── FORM HELPERS (style KasirFormPage) ──────────────────────────────────────
+  Widget _label(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text(text,
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, fontSize: 13)),
+      );
+
+  Widget _field({
     required TextEditingController controller,
-    required String label,
-    required IconData icon,
+    required String hint,
+    IconData? prefixIcon,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
       decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
+        hintText: hint,
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, color: _blueSoft)
+            : null,
         filled: true,
         fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
       ),
@@ -124,163 +217,122 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(232, 233, 225, 225),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const HeaderWidget(title: "Tambah Pelanggan"),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Column(
-                  children: [
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundColor: Colors.white,
-                          backgroundImage: _fotoProfil != null
-                              ? FileImage(_fotoProfil!)
-                              : null,
-                          child: _fotoProfil == null
-                              ? const Icon(Icons.person,
-                                  size: 60, color: Color(0xFF003B73))
-                              : null,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.add_a_photo,
-                              color: Color(0xFF003B73)),
-                          onPressed: _pilihFoto,
-                        ),
-                      ],
+      backgroundColor: _bgColor,
+      body: Column(
+        children: [
+          // ── HEADER ────────────────────────────────────────────────────────
+          HeaderWidget(
+              title: isEdit ? 'Edit Pelanggan' : 'Tambah Pelanggan'),
+
+          // ── AVATAR ────────────────────────────────────────────────────────
+          const SizedBox(height: 24),
+          _buildAvatar(),
+          const SizedBox(height: 24),
+
+          // ── FORM ──────────────────────────────────────────────────────────
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _label('Nama Pelanggan *'),
+                  _field(
+                    controller: _namaController,
+                    hint: 'Masukkan nama pelanggan',
+                    prefixIcon: Icons.person,
+                  ),
+                  const SizedBox(height: 16),
+
+                  _label('Email *'),
+                  _field(
+                    controller: _emailController,
+                    hint: 'Masukkan email',
+                    prefixIcon: Icons.email,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16),
+
+                  _label('No Handphone *'),
+                  _field(
+                    controller: _noHpController,
+                    hint: '08xxxxxxxxxx',
+                    prefixIcon: Icons.phone,
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── Jenis Kelamin ──────────────────────────────────────────
+                  _label('Jenis Kelamin *'),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: _namaController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nama Pelanggan',
-                        prefixIcon: Icon(Icons.person),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(16)),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(16)),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _noHpController,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: 'No Handphone',
-                        prefixIcon: Icon(Icons.phone),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(16)),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Jenis Kelamin',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Column(
+                    child: Column(
                       children: [
                         RadioListTile<String>(
                           title: const Text('Pria'),
                           value: 'Laki-laki',
                           groupValue: _jenisKelamin,
-                          shape: const CircleBorder(),
-                          onChanged: (value) =>
-                              setState(() => _jenisKelamin = value),
-                          activeColor: const Color(0xFF003B73),
-                          contentPadding: EdgeInsets.zero,
+                          onChanged: (v) =>
+                              setState(() => _jenisKelamin = v),
+                          activeColor: _blue1,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 12),
                         ),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
                         RadioListTile<String>(
                           title: const Text('Wanita'),
                           value: 'Perempuan',
                           groupValue: _jenisKelamin,
-                          shape: const CircleBorder(),
-                          onChanged: (value) =>
-                              setState(() => _jenisKelamin = value),
-                          activeColor: const Color(0xFF003B73),
-                          contentPadding: EdgeInsets.zero,
+                          onChanged: (v) =>
+                              setState(() => _jenisKelamin = v),
+                          activeColor: _blue1,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 12),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _alamatController,
-                      maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Alamat',
-                        prefixIcon: Icon(Icons.home),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(16)),
-                          borderSide: BorderSide.none,
+                  ),
+                  const SizedBox(height: 16),
+
+                  _label('Alamat *'),
+                  _field(
+                    controller: _alamatController,
+                    hint: 'Masukkan alamat',
+                    prefixIcon: Icons.home,
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 30),
+
+                  // ── TOMBOL SIMPAN ──────────────────────────────────────────
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _simpan,
+                      icon: const Icon(Icons.save, color: Colors.white),
+                      label: Text(
+                        isEdit ? 'Simpan Perubahan' : 'Simpan',
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _blue1,
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _simpan,
-                        icon: const Icon(Icons.save, color: Colors.white),
-                        label: const Text(
-                          'Simpan',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
-                          backgroundColor: const Color(0xFF003B73),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          textStyle: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

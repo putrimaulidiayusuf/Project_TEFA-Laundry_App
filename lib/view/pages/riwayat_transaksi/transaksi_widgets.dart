@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/database/app_database.dart';
+import 'package:app_laundry/view/pages/riwayat_transaksi/widget_no_data.dart';
 
 const _gold = Color(0xFF0A4174);
 const _green = Color(0xFF0A4174);
@@ -53,12 +54,10 @@ class TransaksiCard extends StatelessWidget {
           children: [
             // Header: invoice + status
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.1),
-                borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               ),
               child: Row(
                 children: [
@@ -68,20 +67,17 @@ class TransaksiCard extends StatelessWidget {
                       children: [
                         Text(
                           trx.invoice,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 13),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                         Text(
                           fmt.format(trx.createdAt),
-                          style: const TextStyle(
-                              fontSize: 11, color: Colors.black54),
+                          style: const TextStyle(fontSize: 11, color: Colors.black54),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor,
                       borderRadius: BorderRadius.circular(20),
@@ -89,9 +85,7 @@ class TransaksiCard extends StatelessWidget {
                     child: Text(
                       statusLabel,
                       style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold),
+                          color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -106,11 +100,10 @@ class TransaksiCard extends StatelessWidget {
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: Colors.grey.shade200,
-                    backgroundImage:
-                        (customer?.photo != null &&
-                                File(customer!.photo!).existsSync())
-                            ? FileImage(File(customer.photo!))
-                            : null,
+                    backgroundImage: (customer?.photo != null &&
+                            File(customer!.photo!).existsSync())
+                        ? FileImage(File(customer.photo!))
+                        : null,
                     child: customer?.photo == null
                         ? const Icon(Icons.person, size: 18)
                         : null,
@@ -122,13 +115,11 @@ class TransaksiCard extends StatelessWidget {
                       children: [
                         Text(
                           customer?.name ?? 'Pelanggan',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 14),
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                         ),
                         Text(
                           '${data.items.length} item • ${trx.metodeBayar}',
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.black54),
+                          style: const TextStyle(fontSize: 12, color: Colors.black54),
                         ),
                       ],
                     ),
@@ -137,8 +128,7 @@ class TransaksiCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       const Text('Total',
-                          style: TextStyle(
-                              fontSize: 11, color: Colors.black54)),
+                          style: TextStyle(fontSize: 11, color: Colors.black54)),
                       Text(
                         _fmtRp(trx.total),
                         style: const TextStyle(
@@ -161,12 +151,14 @@ class TransaksiCard extends StatelessWidget {
 
 /// ===================================================================
 /// Tab generik — dipakai oleh semua 5 tab
+/// query dikirim dari RiwayatPage (search bar terpusat)
 /// ===================================================================
 class TabRiwayat extends StatefulWidget {
   final String status;
   final Color statusColor;
   final String statusLabel;
-  final List<String> nextStatuses; // status berikutnya yang bisa dipilih
+  final List<String> nextStatuses;
+  final String query; // ← terima query dari parent
 
   const TabRiwayat({
     super.key,
@@ -174,6 +166,7 @@ class TabRiwayat extends StatefulWidget {
     required this.statusColor,
     required this.statusLabel,
     this.nextStatuses = const [],
+    this.query = '',  // default kosong
   });
 
   @override
@@ -182,9 +175,18 @@ class TabRiwayat extends StatefulWidget {
 
 class _TabRiwayatState extends State<TabRiwayat> {
   List<TransactionWithDetails> _data = [];
-  List<TransactionWithDetails> _filtered = [];
   bool _loading = true;
-  String _query = '';
+
+  // Filter berdasarkan query dari parent
+  List<TransactionWithDetails> get _filtered {
+    final q = widget.query.toLowerCase().trim();
+    if (q.isEmpty) return _data;
+    return _data.where((d) {
+      return d.trx.invoice.toLowerCase().contains(q) ||
+          (d.customer?.name.toLowerCase().contains(q) ?? false) ||
+          (d.customer?.phone.toLowerCase().contains(q) ?? false);
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -192,46 +194,36 @@ class _TabRiwayatState extends State<TabRiwayat> {
     _load();
   }
 
+  // Reload saat status berubah (jarang, tapi aman)
+  @override
+  void didUpdateWidget(TabRiwayat oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.status != widget.status) _load();
+    // query berubah → otomatis rebuild karena _filtered adalah getter
+  }
+
   Future<void> _load() async {
     setState(() => _loading = true);
     final db = context.read<AppDatabase>();
-    final list =
-        await db.getTransactionsWithDetailsByStatus(widget.status);
-    setState(() {
-      _data = list;
-      _applyFilter();
-      _loading = false;
-    });
-  }
-
-  void _applyFilter() {
-    final q = _query.toLowerCase();
-    _filtered = q.isEmpty
-        ? List.from(_data)
-        : _data.where((d) {
-            return d.trx.invoice.toLowerCase().contains(q) ||
-                (d.customer?.name.toLowerCase().contains(q) ?? false) ||
-                (d.customer?.phone.toLowerCase().contains(q) ?? false);
-          }).toList();
+    final list = await db.getTransactionsWithDetailsByStatus(widget.status);
+    if (mounted) {
+      setState(() {
+        _data = list;
+        _loading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(
-          child: CircularProgressIndicator(color: _gold));
+      return const Center(child: CircularProgressIndicator(color: _gold));
     }
 
-    if (_filtered.isEmpty) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.receipt_long, size: 64, color: Colors.grey),
-          SizedBox(height: 8),
-          Text('Tidak ada transaksi',
-              style: TextStyle(color: Colors.grey)),
-        ],
-      );
+    final filtered = _filtered;
+
+    if (filtered.isEmpty) {
+      return const WidgetNoData();
     }
 
     return RefreshIndicator(
@@ -239,9 +231,9 @@ class _TabRiwayatState extends State<TabRiwayat> {
       color: _gold,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: _filtered.length,
+        itemCount: filtered.length,
         itemBuilder: (_, i) {
-          final d = _filtered[i];
+          final d = filtered[i];
           return TransaksiCard(
             data: d,
             statusColor: widget.statusColor,
@@ -329,8 +321,7 @@ class DetailTransaksiPage extends StatelessWidget {
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Row(children: [
-                          const Icon(Icons.phone,
-                              size: 13, color: _gold),
+                          const Icon(Icons.phone, size: 13, color: _gold),
                           const SizedBox(width: 4),
                           Text(data.customer?.phone ?? '-',
                               style: const TextStyle(fontSize: 13)),
@@ -339,8 +330,7 @@ class DetailTransaksiPage extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor,
                       borderRadius: BorderRadius.circular(20),
@@ -376,21 +366,17 @@ class DetailTransaksiPage extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            // ===== Tanggal Masuk & Estimasi (dari item pertama) =====
+            // ===== Tanggal Masuk & Estimasi =====
             if (data.items.isNotEmpty) ...[
               _Card(
                 child: Column(
                   children: [
                     _InfoRow('Tanggal Masuk',
                         fmtDate.format(data.items.first.item.tanggalMasuk)),
-                    _InfoRow(
-                        'Estimasi Selesai',
-                        fmtDate.format(
-                            data.items.first.item.estimasiSelesai)),
+                    _InfoRow('Estimasi Selesai',
+                        fmtDate.format(data.items.first.item.estimasiSelesai)),
                     if (data.items.first.item.keterangan != null)
-                      _InfoRow(
-                          'Keterangan',
-                          data.items.first.item.keterangan!),
+                      _InfoRow('Keterangan', data.items.first.item.keterangan!),
                   ],
                 ),
               ),
@@ -433,18 +419,15 @@ class DetailTransaksiPage extends StatelessWidget {
                               color: _green)),
                     ],
                   ),
-                  if (trx.jumlahBayar > 0 &&
-                      trx.jumlahBayar != trx.total) ...[
+                  if (trx.jumlahBayar > 0 && trx.jumlahBayar != trx.total) ...[
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Jumlah Bayar',
-                            style: TextStyle(
-                                color: Colors.black54, fontSize: 13)),
+                            style: TextStyle(color: Colors.black54, fontSize: 13)),
                         Text(_fmtRp(trx.jumlahBayar),
-                            style:
-                                const TextStyle(fontSize: 13)),
+                            style: const TextStyle(fontSize: 13)),
                       ],
                     ),
                   ],
@@ -507,8 +490,7 @@ class _InfoRow extends StatelessWidget {
           SizedBox(
             width: 130,
             child: Text(label,
-                style: const TextStyle(
-                    color: Colors.black54, fontSize: 13)),
+                style: const TextStyle(color: Colors.black54, fontSize: 13)),
           ),
           const Text(': '),
           Expanded(
@@ -537,7 +519,6 @@ class _ItemRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          // Gambar
           Container(
             width: 46,
             height: 46,
@@ -549,8 +530,7 @@ class _ItemRow extends StatelessWidget {
                     File(detail.serviceType!.image!).existsSync())
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                        File(detail.serviceType!.image!),
+                    child: Image.file(File(detail.serviceType!.image!),
                         fit: BoxFit.cover),
                   )
                 : const Icon(Icons.inventory_2,
@@ -566,8 +546,7 @@ class _ItemRow extends StatelessWidget {
                         fontWeight: FontWeight.w600, fontSize: 13)),
                 Text(
                   'Rp.${detail.item.price.toInt()} /$unitName',
-                  style: const TextStyle(
-                      fontSize: 12, color: Colors.black54),
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
                 if (detail.perfume != null)
                   Text('🍎 ${detail.perfume!.name}',
@@ -646,8 +625,7 @@ class _StatusButton extends StatelessWidget {
           }
         },
         child: Text(label,
-            style: const TextStyle(
-                fontSize: 15, fontWeight: FontWeight.bold)),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
       ),
     );
   }

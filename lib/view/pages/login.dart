@@ -70,7 +70,7 @@ class _LoginState extends State<Login> {
                     ),
                     const SizedBox(height: 50),
                     const Text(
-                      "Welcome To Laundique",
+                      "Kasir Mini Laundry",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 28,

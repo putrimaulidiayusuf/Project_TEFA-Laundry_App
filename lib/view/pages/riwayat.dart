@@ -6,7 +6,7 @@ import 'package:app_laundry/view/pages/riwayat_transaksi/tab_proses.dart';
 import 'package:app_laundry/view/pages/riwayat_transaksi/tab_selesai.dart';
 import 'package:app_laundry/view/pages/riwayat_transaksi/tab_siap_ambil.dart';
 
-const _gold = Color(0xFF0A4174);
+const _blue1 = Color(0xFF0A4174);
 
 class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
@@ -18,6 +18,8 @@ class RiwayatPage extends StatefulWidget {
 class _RiwayatPageState extends State<RiwayatPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
 
   static const _tabs = [
     Tab(text: 'Antrian'),
@@ -31,54 +33,68 @@ class _RiwayatPageState extends State<RiwayatPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _searchController.addListener(() {
+      setState(() => _query = _searchController.text);
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _blue1,
       body: Column(
         children: [
+          // Header tetap biru
           const HeaderWidget(title: 'Riwayat Transaksi'),
 
-          const SizedBox(height: 12),
-
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+          // Search bar — putih normal
+          Container(
+            color: _blue1,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Cari invoice / nama pelanggan...',
-                prefixIcon:
-                    const Icon(Icons.search, color: Colors.grey),
+                hintStyle: TextStyle(color: Colors.grey.shade800, fontSize: 13),
+                prefixIcon: Icon(Icons.search, color: Colors.grey.shade800, size: 20),
+                suffixIcon: _query.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.close, color: Colors.grey.shade800, size: 18),
+                        onPressed: () => _searchController.clear(),
+                      )
+                    : null,
                 filled: true,
-                fillColor: const Color(0xFFF5F5F5),
+                fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    vertical: 10, horizontal: 16),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: _blue1.withValues(alpha: 0.4), width: 1),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               ),
-              // search fungsional dilakukan per-tab via refresh
-              onSubmitted: (_) {},
+              style: TextStyle(color: Colors.grey.shade800, fontSize: 13),
+              cursorColor: _blue1,
             ),
           ),
 
-          const SizedBox(height: 12),
-
-          // Tab Bar
+          // Tab Bar — tetap biru
           Container(
-            color: _gold,
+            color: _blue1,
             child: TabBar(
               controller: _tabController,
               labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70,
+              unselectedLabelColor: Colors.white54,
               indicatorColor: Colors.white,
               indicatorWeight: 3,
               isScrollable: true,
@@ -86,17 +102,20 @@ class _RiwayatPageState extends State<RiwayatPage>
             ),
           ),
 
-          // Tab Content
+          // Tab Content — background putih
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: const [
-                TabAntrian(),
-                TabProses(),
-                TabSiapAmbil(),
-                TabSelesai(),
-                TabBatal(),
-              ],
+            child: ColoredBox(
+              color: Colors.white,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  TabAntrian(query: _query),
+                  TabProses(query: _query),
+                  TabSiapAmbil(query: _query),
+                  TabSelesai(query: _query),
+                  TabBatal(query: _query),
+                ],
+              ),
             ),
           ),
         ],

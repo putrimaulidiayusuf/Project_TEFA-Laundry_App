@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'transaksi_widgets.dart';
 
 class TabProses extends StatelessWidget {
-  const TabProses({super.key});
+  final String query;
+  const TabProses({super.key, this.query = ''});
 
   @override
   Widget build(BuildContext context) {
-    return const TabRiwayat(
+    return TabRiwayat(
+      query: query,
       status: 'proses',
-      statusColor: Color(0xFF0D47A1),
+      statusColor: const Color(0xFF0D47A1),
       statusLabel: 'Proses',
-      nextStatuses: ['siap_ambil', 'batal'],
+      nextStatuses: const ['siap_ambil', 'batal'],
     );
   }
 }

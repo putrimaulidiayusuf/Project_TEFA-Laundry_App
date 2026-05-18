@@ -1,11 +1,11 @@
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
-import '../../data/repositories/customer_repository.dart';
 import '../../core/database/app_database.dart';
 
 class CustomerVM extends ChangeNotifier {
-  final CustomerRepository repo;
+  final AppDatabase db;
 
-  CustomerVM(this.repo);
+  CustomerVM(this.db);
 
   List<Customer> customers = [];
   List<Customer> filtered = [];
@@ -20,7 +20,7 @@ class CustomerVM extends ChangeNotifier {
   }
 
   Future<void> load() async {
-    customers = await repo.getCustomers();
+    customers = await db.getCustomers();
     filtered = customers;
     notifyListeners();
   }
@@ -33,20 +33,44 @@ class CustomerVM extends ChangeNotifier {
     String? address,
     String? photo,
   }) async {
-    await repo.createCustomer(
-      name: name,
-      phone: phone,
-      email: email,
-      gender: gender,
-      address: address,
-      photo: photo,
-    );
+    await db.insertCustomer(CustomersCompanion(
+      name: Value(name),
+      phone: Value(phone),
+      email: Value(email),
+      gender: Value(gender),
+      address: Value(address),
+      photo: Value(photo),
+    ));
 
     await load();
   }
 
+  // ── TAMBAHAN: Update pelanggan ────────────────────────────────────────────
+  Future<void> updateCustomer({
+    required int id,
+    required String name,
+    required String phone,
+    String? email,
+    String? gender,
+    String? address,
+    String? photo,
+  }) async {
+    await db.updateCustomer(CustomersCompanion(
+      id: Value(id),
+      name: Value(name),
+      phone: Value(phone),
+      email: Value(email),
+      gender: Value(gender),
+      address: Value(address),
+      photo: Value(photo),
+    ));
+
+    await load();
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   Future<void> deleteCustomer(int id) async {
-    await repo.deleteCustomer(id);
+    await db.deleteCustomer(id);
     await load();
   }
 

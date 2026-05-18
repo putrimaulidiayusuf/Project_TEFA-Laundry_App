@@ -12,7 +12,7 @@ class WidgetNoData extends StatelessWidget {
           Icon(Icons.search_off, size: 70, color: Colors.grey),
           SizedBox(height: 10),
           Text(
-            "Data Tidak Di temukan",
+            "Tidak ada Data",
             style: TextStyle(fontSize: 16, color: Colors.grey),
           )
         ],

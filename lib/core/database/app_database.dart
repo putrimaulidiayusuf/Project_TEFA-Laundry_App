@@ -209,6 +209,9 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertCustomer(CustomersCompanion data) =>
       into(customers).insert(data);
 
+  Future<bool> updateCustomer(CustomersCompanion data) =>
+    update(customers).replace(data);
+
   Future<int> deleteCustomer(int id) =>
       (delete(customers)..where((c) => c.id.equals(id))).go();
 

@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'transaksi_widgets.dart';
 
 class TabAntrian extends StatelessWidget {
-  const TabAntrian({super.key});
+  final String query;
+  const TabAntrian({super.key, this.query = ''});
 
   @override
   Widget build(BuildContext context) {
-    return const TabRiwayat(
+    return TabRiwayat(
+      query: query,
       status: 'antrian',
-      statusColor: Color(0xFF0A4174),
+      statusColor: const Color(0xFF0A4174),
       statusLabel: 'Antrian',
-      nextStatuses: ['proses', 'batal'],
+      nextStatuses: const ['proses', 'batal'],
     );
   }
 }
