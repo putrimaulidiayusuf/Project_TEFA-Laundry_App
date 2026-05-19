@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:app_laundry/controllers/printer_controller.dart';
 import 'package:app_laundry/view/viewmodels/outlet_vm.dart';
 
@@ -19,7 +20,7 @@ class TransaksiBerhasilPage extends StatelessWidget {
   final String namaKasir;
   final String metodeBayar;
   final String statusTransaksi;
-  final String keterangan; // ← catatan dari transaksi
+  final String keterangan;
   final int diskon;
   final List<Map<String, dynamic>> items;
 
@@ -43,33 +44,32 @@ class TransaksiBerhasilPage extends StatelessWidget {
   String _fmt(double v) =>
       'Rp ${NumberFormat('#,###', 'id_ID').format(v.toInt())}';
 
+  // ── Cetak struk ke printer thermal ──────────────────────────────
   Future<void> _cetak(BuildContext context) async {
     final printer  = Get.find<PrinterController>();
     final outletVM = context.read<OutletVM>();
 
-    // Hitung kembalian dengan guard agar tidak negatif
     final kembalian = (jumlahBayar - totalHarga).toInt();
 
     final ok = await printer.printStruk(
       template:        outletVM.templateStruk,
       namaToko:        outletVM.nama,
       alamat:          outletVM.alamat,
-      fotoPath:        outletVM.fotoPath,   // ← foto logo outlet
+      fotoPath:        outletVM.fotoPath,
       footerMessage:   outletVM.footerMessage,
-      pelanggan:       pelanggan,           // ← dari transaksi
-      noOrder:         noOrder,             // ← dari transaksi
+      pelanggan:       pelanggan,
+      noOrder:         noOrder,
       tanggal:         tanggal,
       estimasiSelesai: estimasiSelesai,
       namaKasir:       namaKasir,
       metodeBayar:     metodeBayar,
       statusTransaksi: statusTransaksi,
-      // FIX: catatan → keterangan transaksi, bukan outletVM.catatan
-      catatan:         keterangan,          // ← catatan TRANSAKSI ✓
-      keterangan:      keterangan,          // ← sama, untuk kompatibilitas
+      catatan:         keterangan,
+      keterangan:      keterangan,
       items:           items,
       total:           totalHarga.toInt(),
-      bayar:           jumlahBayar.toInt(), // ← jumlah yang dibayar
-      kembalian:       kembalian,           // ← kembalian dihitung di sini
+      bayar:           jumlahBayar.toInt(),
+      kembalian:       kembalian,
       diskon:          diskon,
       autoCut:         outletVM.autoCut,
       cashdrawer:      outletVM.cashdrawer,
@@ -80,6 +80,56 @@ class TransaksiBerhasilPage extends StatelessWidget {
         const SnackBar(content: Text('Gagal print, printer tidak terhubung')),
       );
     }
+  }
+
+  // ── Bagikan ringkasan transaksi via share sheet ──────────────────
+  Future<void> _bagikan(BuildContext context) async {
+    final outletVM  = context.read<OutletVM>();
+    final kembalian = jumlahBayar - totalHarga;
+
+    // Susun baris item
+    final StringBuffer itemLines = StringBuffer();
+    for (final item in items) {
+      final namaItem = item['nama']     ?? item['name'] ?? '-';
+      final qty      = item['qty']      ?? item['jumlah'] ?? 1;
+      final harga    = item['harga']    ?? item['price'] ?? 0;
+      final subtotal = (qty is int ? qty : (qty as num).toInt()) *
+                       (harga is double ? harga : (harga as num).toDouble());
+      itemLines.writeln(
+        '  • $namaItem (${qty}x) ........... ${_fmt(subtotal)}',
+      );
+    }
+
+    // Teks struk teks yang akan dibagikan
+    final String pesan = '''
+🧺 *${outletVM.nama}*
+${outletVM.alamat.isNotEmpty ? '📍 ${outletVM.alamat}' : ''}
+${'─' * 32}
+📋 *Struk Transaksi*
+
+🔖 No Order     : $noOrder
+👤 Pelanggan    : $pelanggan
+📅 Tanggal      : $tanggal
+🕐 Est. Selesai : $estimasiSelesai
+💳 Metode Bayar : $metodeBayar
+👨‍💼 Kasir         : $namaKasir
+📦 Status       : $statusTransaksi
+${'─' * 32}
+*Detail Layanan:*
+$itemLines${'─' * 32}
+${diskon > 0 ? '🏷️ Diskon       : $diskon%\n' : ''}💰 Total        : ${_fmt(totalHarga)}
+💵 Bayar        : ${_fmt(jumlahBayar)}
+💚 Kembalian    : ${_fmt(kembalian < 0 ? 0 : kembalian)}
+${'─' * 32}
+${keterangan.isNotEmpty ? '📝 Catatan: $keterangan\n' : ''}${outletVM.footerMessage.isNotEmpty ? '\n${outletVM.footerMessage}' : ''}
+
+_Terima kasih telah menggunakan layanan kami!_ 🙏
+''';
+
+    await Share.share(
+      pesan.trim(),
+      subject: 'Struk Laundry - No Order $noOrder',
+    );
   }
 
   @override
@@ -115,8 +165,8 @@ class TransaksiBerhasilPage extends StatelessWidget {
 
                   // Ringkasan pembayaran
                   _InfoCard(children: [
-                    _InfoRow(label: 'No Order',   value: noOrder),
-                    _InfoRow(label: 'Pelanggan',  value: pelanggan),
+                    _InfoRow(label: 'No Order',    value: noOrder),
+                    _InfoRow(label: 'Pelanggan',   value: pelanggan),
                     _InfoRow(
                       label: 'Total Harga',
                       value: _fmt(totalHarga),
@@ -130,7 +180,8 @@ class TransaksiBerhasilPage extends StatelessWidget {
                       label: 'Kembalian',
                       value: _fmt(kembalian < 0 ? 0 : kembalian),
                       bold: kembalian > 0,
-                      valueColor: kembalian > 0 ? Colors.green.shade700 : null,
+                      valueColor:
+                          kembalian > 0 ? Colors.green.shade700 : null,
                     ),
                   ]),
                 ],
@@ -139,7 +190,8 @@ class TransaksiBerhasilPage extends StatelessWidget {
 
             // ── Tombol aksi ────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -156,10 +208,7 @@ class TransaksiBerhasilPage extends StatelessWidget {
                   _RoundBtn(
                     icon: Icons.share,
                     label: 'Bagikan',
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Fitur bagikan belum tersedia')),
-                    ),
+                    onTap: () => _bagikan(context), // ← terhubung sekarang
                   ),
                 ],
               ),
@@ -207,9 +256,7 @@ class _InfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 }

@@ -5,16 +5,17 @@ class WidgetNoData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(Icons.search_off, size: 70, color: Colors.grey),
           SizedBox(height: 10),
           Text(
-            "Data Tidak Di temukan",
+            'Data Tidak Ditemukan',
             style: TextStyle(fontSize: 16, color: Colors.grey),
-          )
+          ),
         ],
       ),
     );

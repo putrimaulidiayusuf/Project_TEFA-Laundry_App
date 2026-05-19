@@ -62,23 +62,23 @@ class _RiwayatPageState extends State<RiwayatPage>
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Cari invoice / nama pelanggan...',
-                hintStyle: TextStyle(color: Colors.grey.shade800, fontSize: 13),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade800, size: 20),
+                hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 20),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.close, color: Colors.grey.shade800, size: 18),
+                        icon: Icon(Icons.close, color: Colors.grey.shade600, size: 18),
                         onPressed: () => _searchController.clear(),
                       )
                     : null,
                 filled: true,
-                fillColor: Colors.grey.shade100,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide(color: _blue1.withValues(alpha: 0.4), width: 1),
+                  borderSide: BorderSide.none,
                 ),
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 16),

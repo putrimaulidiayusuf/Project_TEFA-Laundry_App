@@ -14,6 +14,10 @@ class PerfumeRepository {
     return ds.addPerfume(name);
   }
 
+  Future<void> updatePerfume(int id, String name) {
+    return ds.updatePerfume(id, name);
+  }
+
   Future<void> deletePerfume(int id) {
     return ds.deletePerfume(id);
   }

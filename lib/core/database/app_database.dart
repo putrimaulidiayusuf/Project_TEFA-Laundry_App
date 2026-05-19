@@ -221,6 +221,9 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> insertUnit(UnitsCompanion data) => into(units).insert(data);
 
+  Future<bool> updateUnit(UnitsCompanion data) =>
+      update(units).replace(data);
+
   Future<int> deleteUnit(int id) =>
       (delete(units)..where((u) => u.id.equals(id))).go();
 
@@ -230,6 +233,9 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> insertPerfume(PerfumesCompanion data) =>
       into(perfumes).insert(data);
+
+  Future<bool> updatePerfume(PerfumesCompanion data) =>
+      update(perfumes).replace(data);
 
   Future<int> deletePerfume(int id) =>
       (delete(perfumes)..where((p) => p.id.equals(id))).go();

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:app_laundry/view/widgets/header.dart';
 
-// ─── Warna utama (sama dengan KasirPage) ─────────────────────────────────────
+// ─── Warna utama ──────────────────────────────────────────────────────────────
 const _blue1    = Color(0xFF0A4174);
 const _blueSoft = Color(0xFF5A86AE);
 const _bgColor  = Color(0xFFF4F6F8);
@@ -29,6 +29,7 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
   String? _existingFotoPath;
 
   final ImagePicker _picker = ImagePicker();
+  final _formKey = GlobalKey<FormState>();
 
   bool get isEdit => widget.pelanggan != null;
 
@@ -53,35 +54,68 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
     super.dispose();
   }
 
-  // ── PILIH FOTO (logic tidak diubah) ─────────────────────────────────────────
+  // ── PILIH FOTO ───────────────────────────────────────────────────────────────
   void _pilihFoto() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(20),
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Ambil dari Kamera'),
-              onTap: () async {
-                Navigator.pop(context);
-                final f = await _picker.pickImage(source: ImageSource.camera);
-                if (f != null) setState(() => _fotoProfil = File(f.path));
-              },
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Upload dari Galeri'),
-              onTap: () async {
-                Navigator.pop(context);
-                final f = await _picker.pickImage(source: ImageSource.gallery);
-                if (f != null) setState(() => _fotoProfil = File(f.path));
-              },
+            const Text(
+              'Pilih Foto Profil',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: _blue1),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _photoOption(
+                    icon: Icons.camera_alt_outlined,
+                    label: 'Kamera',
+                    onTap: () async {
+                      Navigator.pop(context);
+                      final f = await _picker.pickImage(
+                          source: ImageSource.camera);
+                      if (f != null) {
+                        setState(() => _fotoProfil = File(f.path));
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _photoOption(
+                    icon: Icons.photo_library_outlined,
+                    label: 'Galeri',
+                    onTap: () async {
+                      Navigator.pop(context);
+                      final f = await _picker.pickImage(
+                          source: ImageSource.gallery);
+                      if (f != null) {
+                        setState(() => _fotoProfil = File(f.path));
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -89,7 +123,34 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
     );
   }
 
-  // ── SIMPAN (logic tidak diubah) ──────────────────────────────────────────────
+  Widget _photoOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: _bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _blue1.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: _blue1, size: 32),
+            const SizedBox(height: 8),
+            Text(label,
+                style: const TextStyle(
+                    color: _blue1, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── SIMPAN ───────────────────────────────────────────────────────────────────
   void _simpan() {
     final nama   = _namaController.text.trim();
     final email  = _emailController.text.trim();
@@ -102,7 +163,19 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
         alamat.isEmpty ||
         _jenisKelamin == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua data harus diisi')),
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.white),
+              SizedBox(width: 8),
+              Text('Semua data harus diisi'),
+            ],
+          ),
+          backgroundColor: Colors.orange.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
       return;
     }
@@ -119,38 +192,49 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
     Navigator.pop(context, data);
   }
 
-  // ── AVATAR (style KasirFormPage) ─────────────────────────────────────────────
+  // ── AVATAR ───────────────────────────────────────────────────────────────────
   Widget _buildAvatar() {
-    Widget avatarContent;
+    Widget inner;
 
     if (_fotoProfil != null) {
-      avatarContent = ClipOval(
+      inner = ClipOval(
         child: Image.file(_fotoProfil!,
-            fit: BoxFit.cover, width: 110, height: 110),
+            fit: BoxFit.cover, width: 100, height: 100),
       );
     } else if (_existingFotoPath != null &&
         File(_existingFotoPath!).existsSync()) {
-      avatarContent = ClipOval(
+      inner = ClipOval(
         child: Image.file(File(_existingFotoPath!),
-            fit: BoxFit.cover, width: 110, height: 110),
+            fit: BoxFit.cover, width: 100, height: 100),
       );
     } else {
       final initial = _namaController.text.isNotEmpty
           ? _namaController.text[0].toUpperCase()
           : '?';
-      avatarContent = Container(
-        width: 110,
-        height: 110,
-        decoration: const BoxDecoration(
+      inner = Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: _blue1,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1565C0), Color(0xFF0A4174)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _blue1.withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         alignment: Alignment.center,
         child: Text(
           initial,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 40,
+            fontSize: 38,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -160,57 +244,78 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
-        avatarContent,
+        inner,
         GestureDetector(
           onTap: _pilihFoto,
           child: Container(
-            padding: const EdgeInsets.all(7),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _blueSoft,
-              border: Border.all(color: Colors.white, width: 2),
+              border: Border.all(color: Colors.white, width: 2.5),
+              boxShadow: [
+                BoxShadow(
+                  color: _blueSoft.withValues(alpha: 0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child:
-                const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+            child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
           ),
         ),
       ],
     );
   }
 
-  // ── FORM HELPERS (style KasirFormPage) ──────────────────────────────────────
-  Widget _label(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Text(text,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, fontSize: 13)),
-      );
-
-  Widget _field({
+  // ── FORM FIELD ───────────────────────────────────────────────────────────────
+  Widget _buildField({
     required TextEditingController controller,
+    required String label,
     required String hint,
-    IconData? prefixIcon,
+    required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: prefixIcon != null
-            ? Icon(prefixIcon, color: _blueSoft)
-            : null,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            color: Color(0xFF374151),
+          ),
         ),
-      ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+            prefixIcon: Icon(icon, color: _blueSoft, size: 20),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: _blue1, width: 2),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -218,120 +323,292 @@ class _TambahPelangganPageState extends State<TambahPelangganPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bgColor,
-      body: Column(
-        children: [
-          // ── HEADER ────────────────────────────────────────────────────────
-          HeaderWidget(
-              title: isEdit ? 'Edit Pelanggan' : 'Tambah Pelanggan'),
+      body: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            // ── HEADER ──────────────────────────────────────────────────────
+            HeaderWidget(
+                title: isEdit ? 'Edit Pelanggan' : 'Tambah Pelanggan'),
 
-          // ── AVATAR ────────────────────────────────────────────────────────
-          const SizedBox(height: 24),
-          _buildAvatar(),
-          const SizedBox(height: 24),
-
-          // ── FORM ──────────────────────────────────────────────────────────
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+            // ── AVATAR SECTION ───────────────────────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _label('Nama Pelanggan *'),
-                  _field(
-                    controller: _namaController,
-                    hint: 'Masukkan nama pelanggan',
-                    prefixIcon: Icons.person,
-                  ),
-                  const SizedBox(height: 16),
-
-                  _label('Email *'),
-                  _field(
-                    controller: _emailController,
-                    hint: 'Masukkan email',
-                    prefixIcon: Icons.email,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-
-                  _label('No Handphone *'),
-                  _field(
-                    controller: _noHpController,
-                    hint: '08xxxxxxxxxx',
-                    prefixIcon: Icons.phone,
-                    keyboardType: TextInputType.phone,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Jenis Kelamin ──────────────────────────────────────────
-                  _label('Jenis Kelamin *'),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      children: [
-                        RadioListTile<String>(
-                          title: const Text('Pria'),
-                          value: 'Laki-laki',
-                          groupValue: _jenisKelamin,
-                          onChanged: (v) =>
-                              setState(() => _jenisKelamin = v),
-                          activeColor: _blue1,
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        const Divider(height: 1, indent: 16, endIndent: 16),
-                        RadioListTile<String>(
-                          title: const Text('Wanita'),
-                          value: 'Perempuan',
-                          groupValue: _jenisKelamin,
-                          onChanged: (v) =>
-                              setState(() => _jenisKelamin = v),
-                          activeColor: _blue1,
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                      ],
+                  _buildAvatar(),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Tap foto untuk mengubah',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  _label('Alamat *'),
-                  _field(
-                    controller: _alamatController,
-                    hint: 'Masukkan alamat',
-                    prefixIcon: Icons.home,
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 30),
-
-                  // ── TOMBOL SIMPAN ──────────────────────────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _simpan,
-                      icon: const Icon(Icons.save, color: Colors.white),
-                      label: Text(
-                        isEdit ? 'Simpan Perubahan' : 'Simpan',
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 16),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _blue1,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
+
+            // ── FORM ────────────────────────────────────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Card: Informasi Dasar ────────────────────────────────
+                    _sectionCard(
+                      title: 'Informasi Dasar',
+                      icon: Icons.person_outline,
+                      children: [
+                        _buildField(
+                          controller: _namaController,
+                          label: 'Nama Pelanggan *',
+                          hint: 'Masukkan nama pelanggan',
+                          icon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildField(
+                          controller: _emailController,
+                          label: 'Email *',
+                          hint: 'contoh@email.com',
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildField(
+                          controller: _noHpController,
+                          label: 'No. Handphone *',
+                          hint: '08xxxxxxxxxx',
+                          icon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // ── Card: Jenis Kelamin ──────────────────────────────────
+                    _sectionCard(
+                      title: 'Jenis Kelamin *',
+                      icon: Icons.wc_outlined,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(
+                                    () => _jenisKelamin = 'Laki-laki'),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color: _jenisKelamin == 'Laki-laki'
+                                        ? _blue1
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: _jenisKelamin == 'Laki-laki'
+                                          ? _blue1
+                                          : Colors.grey.shade300,
+                                    ),
+                                    boxShadow: _jenisKelamin == 'Laki-laki'
+                                        ? [
+                                            BoxShadow(
+                                              color: _blue1
+                                                  .withValues(alpha: 0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            )
+                                          ]
+                                        : [],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.male,
+                                        size: 20,
+                                        color: _jenisKelamin == 'Laki-laki'
+                                            ? Colors.white
+                                            : Colors.grey.shade600,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Pria',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: _jenisKelamin == 'Laki-laki'
+                                              ? Colors.white
+                                              : Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(
+                                    () => _jenisKelamin = 'Perempuan'),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color: _jenisKelamin == 'Perempuan'
+                                        ? _blue1
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: _jenisKelamin == 'Perempuan'
+                                          ? _blue1
+                                          : Colors.grey.shade300,
+                                    ),
+                                    boxShadow: _jenisKelamin == 'Perempuan'
+                                        ? [
+                                            BoxShadow(
+                                              color: _blue1
+                                                  .withValues(alpha: 0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            )
+                                          ]
+                                        : [],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.female,
+                                        size: 20,
+                                        color: _jenisKelamin == 'Perempuan'
+                                            ? Colors.white
+                                            : Colors.grey.shade600,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Wanita',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: _jenisKelamin == 'Perempuan'
+                                              ? Colors.white
+                                              : Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // ── Card: Alamat ─────────────────────────────────────────
+                    _sectionCard(
+                      title: 'Alamat',
+                      icon: Icons.location_on_outlined,
+                      children: [
+                        _buildField(
+                          controller: _alamatController,
+                          label: 'Alamat Lengkap *',
+                          hint: 'Masukkan alamat lengkap...',
+                          icon: Icons.home_outlined,
+                          maxLines: 3,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    // ── TOMBOL SIMPAN ────────────────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: _simpan,
+                        icon: Icon(
+                          isEdit ? Icons.save_outlined : Icons.check_circle_outline,
+                          color: Colors.white,
+                        ),
+                        label: Text(
+                          isEdit ? 'Simpan Perubahan' : 'Simpan Pelanggan',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _blue1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── SECTION CARD HELPER ──────────────────────────────────────────────────────
+  Widget _sectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section title
+          Row(
+            children: [
+              Icon(icon, color: _blue1, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: _blue1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Divider(color: Colors.grey.shade100),
+          const SizedBox(height: 12),
+          ...children,
         ],
       ),
     );

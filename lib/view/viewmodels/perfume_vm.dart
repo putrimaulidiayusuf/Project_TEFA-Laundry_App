@@ -18,13 +18,16 @@ class PerfumeVM extends ChangeNotifier {
 
   Future<void> add(String name) async {
     await repo.addPerfume(name);
+    await load();
+  }
 
-    await load(); // ini penting supaya UI refresh
+  Future<void> update(int id, String name) async {
+    await repo.updatePerfume(id, name);
+    await load();
   }
 
   Future<void> delete(int id) async {
     await repo.deletePerfume(id);
-
     await load();
   }
 
@@ -37,7 +40,6 @@ class PerfumeVM extends ChangeNotifier {
               p.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
-
     notifyListeners();
   }
 }

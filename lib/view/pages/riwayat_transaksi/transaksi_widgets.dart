@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/database/app_database.dart';
 import 'package:app_laundry/view/pages/riwayat_transaksi/widget_no_data.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 const _gold = Color(0xFF0A4174);
 const _green = Color(0xFF0A4174);
@@ -241,8 +242,8 @@ class _TabRiwayatState extends State<TabRiwayat> {
             onTap: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => DetailTransaksiPage(
+                SlideRoute(
+                  page: DetailTransaksiPage(
                     data: d,
                     statusColor: widget.statusColor,
                     statusLabel: widget.statusLabel,
@@ -545,7 +546,7 @@ class _ItemRow extends StatelessWidget {
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 13)),
                 Text(
-                  'Rp.${detail.item.price.toInt()} /$unitName',
+                  '${_fmtRp(detail.item.price.toDouble())} /$unitName',
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
                 if (detail.perfume != null)

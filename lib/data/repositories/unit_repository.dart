@@ -14,6 +14,10 @@ class UnitRepository {
     return ds.addUnit(name);
   }
 
+  Future<void> updateUnit(int id, String name) {
+    return ds.updateUnit(id, name);
+  }
+
   Future<void> deleteUnit(int id) {
     return ds.deleteUnit(id);
   }

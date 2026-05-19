@@ -21,6 +21,11 @@ class UnitVM extends ChangeNotifier {
     await load();
   }
 
+  Future<void> update(int id, String name) async {
+    await repo.updateUnit(id, name);
+    await load();
+  }
+
   Future<void> delete(int id) async {
     await repo.deleteUnit(id);
     await load();
@@ -35,7 +40,6 @@ class UnitVM extends ChangeNotifier {
               u.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
-
     notifyListeners();
   }
 }

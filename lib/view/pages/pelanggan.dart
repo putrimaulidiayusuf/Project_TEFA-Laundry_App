@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../widgets/header.dart';
 import '../viewmodels/customer_vm.dart';
 import 'tambah_pelanggan.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 // ─── Warna utama (sama dengan KasirPage) ─────────────────────────────────────
 const _blue1    = Color(0xFF0A4174);
@@ -35,9 +36,13 @@ class PelangganPage extends StatelessWidget {
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
+                    horizontal: 16, vertical: 12),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -147,8 +152,8 @@ class PelangganPage extends StatelessWidget {
                                 onPressed: () async {
                                   final hasil = await Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (_) => TambahPelangganPage(
+                                    SlideRoute(
+                                      page: TambahPelangganPage(
                                         pelanggan: {
                                           'nama'        : pelanggan.name,
                                           'email'       : pelanggan.email ?? '',
@@ -197,9 +202,7 @@ class PelangganPage extends StatelessWidget {
               onPressed: () async {
                 final hasil = await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const TambahPelangganPage(),
-                  ),
+                  SlideRoute(page: const TambahPelangganPage()),
                 );
 
                 if (hasil != null) {

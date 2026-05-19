@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:app_laundry/view/widgets/header.dart';
 import 'package:app_laundry/view/viewmodels/outlet_vm.dart';
 import 'package:app_laundry/view/pages/custom_struk_page.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 const _blue = Color(0xFF003B73);
 const _blueAccent = Color(0xFF1565C0);
@@ -41,8 +42,7 @@ class OutletTemplatePage extends StatelessWidget {
                         onSelect: vm.saveTemplate,
                         onSettingsTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (_) => const CustomStrukPage()),
+                          SlideRoute(page: const CustomStrukPage()),
                         ),
                       ),
                     ]),
@@ -63,8 +63,7 @@ class OutletTemplatePage extends StatelessWidget {
                         onSelect: vm.saveTemplate,
                         onSettingsTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (_) => const CustomStrukPage()),
+                          SlideRoute(page: const CustomStrukPage()),
                         ),
                       ),
                     ]),

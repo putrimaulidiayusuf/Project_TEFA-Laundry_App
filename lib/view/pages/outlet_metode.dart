@@ -114,23 +114,18 @@ class _OutletMetodePageState extends State<OutletMetodePage> {
                 onChanged: (v) => setState(() => _query = v),
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.search, color: _blue),
-                  hintText: 'Cari',
+                  hintText: 'Cari metode bayar...',
                   filled: true,
                   fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 12),
+                      horizontal: 16, vertical: 12),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        const BorderSide(color: _blue, width: 1.5),
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),

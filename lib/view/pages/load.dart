@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'login.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 class LoadPage extends StatefulWidget {
   const LoadPage({super.key});
@@ -23,9 +24,9 @@ class _LoadPageState extends State<LoadPage> with SingleTickerProviderStateMixin
     // Navigasi ke login setelah 5 detik
     Timer(const Duration(seconds: 5), () {
       if (mounted) {
-        Navigator.pushReplacement(
+          Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Login()),
+          SlideRoute(page: const Login()),
         );
       }
     });

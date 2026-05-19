@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -24,7 +25,7 @@ class _LoginState extends State<Login> {
           passwordController.text == "123456") {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          SlideRoute(page: const HomePage()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

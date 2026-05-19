@@ -1,6 +1,10 @@
-import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../core/database/app_database.dart';
+import '../pages/tambah_jenis_layanan.dart' show buildImageFromPath;
+
+const _blue1    = Color(0xFF0A4174);
+const _blueLight = Color(0xFFE8F0FA);
 
 class ServiceCard extends StatelessWidget {
   final ServiceWithTypes data;
@@ -22,274 +26,252 @@ class ServiceCard extends StatelessWidget {
   });
 
   String _getUnitName(int unitId) {
-    try {
-      return units.firstWhere((u) => u.id == unitId).name;
-    } catch (_) {
-      return 'Unit';
-    }
+    try { return units.firstWhere((u) => u.id == unitId).name; }
+    catch (_) { return 'Unit'; }
   }
 
   @override
   Widget build(BuildContext context) {
     final service = data.service;
-    final types = data.types;
+    final types   = data.types;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(blurRadius: 4, color: Colors.black12, offset: Offset(0, 2))
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ===== Header Kategori =====
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 4, 0),
+          // ── Header ──────────────────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+            decoration: BoxDecoration(
+              color: _blue1,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
             child: Row(
               children: [
-                // Nama kategori
                 Expanded(
                   child: Text(
                     service.name,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
 
-                // Proses icons
+                // Proses chips
                 _ProsesRow(service: service),
 
-                const SizedBox(width: 4),
-
-                // Menu button
+                // Menu
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.menu, color: Color(0xFF0A4174)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   onSelected: (v) {
-                    if (v == 'edit') onTap();
-                    if (v == 'delete') onDelete();
+                    if (v == 'edit')      onTap();
+                    if (v == 'delete')    onDelete();
                     if (v == 'duplicate') onDuplicate();
                   },
                   itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    PopupMenuItem(value: 'edit',      child: Text('Edit')),
+                    PopupMenuItem(value: 'duplicate', child: Text('Duplikat')),
                     PopupMenuItem(
-                        value: 'duplicate', child: Text('Duplikat')),
-                    PopupMenuItem(
-                        value: 'delete',
-                        child: Text('Hapus',
-                            style: TextStyle(color: Colors.red))),
+                      value: 'delete',
+                      child: Text('Hapus', style: TextStyle(color: Colors.red)),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
 
-          const Divider(height: 16, indent: 14, endIndent: 14),
-
-          // ===== List Jenis Layanan =====
+          // ── Isi: Jenis Layanan ───────────────────────────────────────────
           if (types.isEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-              child: GestureDetector(
-                onTap: onTambahJenis,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 10, horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0F5FF),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                        color: const Color(0xFF0A4174).withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.add, size: 16, color: Color(0xFF0A4174)),
-                      SizedBox(width: 6),
-                      Text(
-                        'Tambah Jenis Layanan',
-                        style: TextStyle(
-                          color: Color(0xFF0A4174),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
+            _buildEmptyJenis()
           else
             ...types.map((t) => _JenisItem(
                   type: t,
                   unitName: _getUnitName(t.unitId),
                 )),
 
-          const SizedBox(height: 6),
+          // ── Footer: Tombol Tambah Jenis ─────────────────────────────────
+          if (types.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+              child: GestureDetector(
+                onTap: onTambahJenis,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  decoration: BoxDecoration(
+                    color: _blueLight,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: _blue1.withValues(alpha: 0.25)),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add, size: 15, color: _blue1),
+                      SizedBox(width: 5),
+                      Text('Tambah Jenis',
+                          style: TextStyle(
+                              color: _blue1,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyJenis() {
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: GestureDetector(
+        onTap: onTambahJenis,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          decoration: BoxDecoration(
+            color: _blueLight,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _blue1.withValues(alpha: 0.25)),
+          ),
+          child: Column(
+            children: [
+              Icon(Icons.add_circle_outline, color: _blue1.withValues(alpha: 0.6), size: 28),
+              const SizedBox(height: 6),
+              const Text(
+                'Tambah Jenis Layanan',
+                style: TextStyle(color: _blue1, fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Belum ada jenis, tap untuk menambahkan',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Proses chips ─────────────────────────────────────────────────────────────
+class _ProsesRow extends StatelessWidget {
+  final Service service;
+  const _ProsesRow({required this.service});
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = <_ProsesChip>[
+      if (service.cuci)    const _ProsesChip(label: 'Cuci',    icon: Icons.water_drop_outlined),
+      if (service.kering)  const _ProsesChip(label: 'Kering',  icon: Icons.air),
+      if (service.setrika) const _ProsesChip(label: 'Setrika', icon: Icons.iron_outlined),
+    ];
+    if (steps.isEmpty) return const SizedBox();
+    return Row(mainAxisSize: MainAxisSize.min, children: steps);
+  }
+}
+
+class _ProsesChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  const _ProsesChip({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: Colors.white),
+          const SizedBox(width: 3),
+          Text(label, style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 }
 
-// ===== Widget baris proses (Cuci >> Kering >> Setrika) =====
-class _ProsesRow extends StatelessWidget {
-  final Service service;
+// ── Satu baris jenis layanan ─────────────────────────────────────────────────
+class _JenisItem extends StatelessWidget {
+  final ServiceType type;
+  final String unitName;
+  const _JenisItem({required this.type, required this.unitName});
 
-  const _ProsesRow({required this.service});
+  String get _durasi =>
+      type.isHour ? '${type.estimateDay} Jam' : '${type.estimateDay} Hari';
 
-  @override
-  Widget build(BuildContext context) {
-    final List<_ProsesStep> steps = [
-      if (service.cuci)
-        const _ProsesStep(
-          icon: Icons.local_laundry_service,
-          label: 'Cuci',
-          color: Color(0xFFE53935),
-        ),
-      if (service.kering)
-        const _ProsesStep(
-          icon: Icons.dry,
-          label: 'Kering',
-          color: Color(0xFFFF8F00),
-        ),
-      if (service.setrika)
-        const _ProsesStep(
-          icon: Icons.iron,
-          label: 'Setrika',
-          color: Color(0xFF0A4174),
-        ),
-    ];
-
-    if (steps.isEmpty) return const SizedBox();
-
-    List<Widget> row = [];
-    for (int i = 0; i < steps.length; i++) {
-      row.add(steps[i]);
-      if (i < steps.length - 1) {
-        row.add(const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 2),
-          child: Text(
-            '>>',
-            style: TextStyle(fontSize: 9, color: Colors.grey),
-          ),
-        ));
-      }
-    }
-
-    return Row(mainAxisSize: MainAxisSize.min, children: row);
-  }
-}
-
-class _ProsesStep extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _ProsesStep({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
+  String _fmtHarga(double p) => p.toInt()
+      .toString()
+      .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(5),
-      margin: const EdgeInsets.only(left: 2),
+      margin: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        color: const Color(0xFFF8FAFD),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade100),
       ),
-      child: Icon(icon, size: 15, color: color),
-    );
-  }
-}
-
-// ===== Widget satu baris jenis layanan =====
-class _JenisItem extends StatelessWidget {
-  final ServiceType type;
-  final String unitName;
-
-  const _JenisItem({required this.type, required this.unitName});
-
-  String get durasiText {
-    final val = type.estimateDay;
-    return type.isHour ? '$val Jam' : '$val Hari';
-  }
-
-  String _formatHarga(double p) {
-    if (p == p.truncateToDouble()) {
-      return p
-          .toInt()
-          .toString()
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (m) => '${m[1]}.',
-          );
-    }
-    return p.toString();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget imageWidget;
-    if (type.image != null && type.image!.isNotEmpty) {
-      imageWidget = ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.file(
-          File(type.image!),
-          width: 52,
-          height: 52,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _defaultImage(),
-        ),
-      );
-    } else {
-      imageWidget = _defaultImage();
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 4, 14, 4),
       child: Row(
         children: [
-          imageWidget,
+          // Gambar
+          _buildImage(),
           const SizedBox(width: 12),
+
+          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   type.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _blue1),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'Rp.${_formatHarga(type.price)}/ $unitName',
-                  style: const TextStyle(fontSize: 12, color: Colors.black87),
-                ),
+                const SizedBox(height: 3),
                 Row(
                   children: [
-                    const Icon(Icons.access_time,
-                        size: 13, color: Color(0xFFFF8F00)),
-                    const SizedBox(width: 3),
-                    Text(
-                      durasiText,
-                      style: const TextStyle(
-                          fontSize: 12, color: Colors.black54),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F0FA),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Rp ${_fmtHarga(type.price)} /$unitName',
+                        style: const TextStyle(fontSize: 11, color: _blue1, fontWeight: FontWeight.w600),
+                      ),
                     ),
+                    const SizedBox(width: 6),
+                    Icon(Icons.access_time, size: 11, color: Colors.grey.shade500),
+                    const SizedBox(width: 2),
+                    Text(_durasi, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
                   ],
                 ),
               ],
@@ -300,15 +282,17 @@ class _JenisItem extends StatelessWidget {
     );
   }
 
-  Widget _defaultImage() {
+  Widget _buildImage() {
+    if (type.image != null && type.image!.isNotEmpty) {
+      return buildImageFromPath(type.image!, size: 48, radius: 10);
+    }
     return Container(
-      width: 52,
-      height: 52,
+      width: 48, height: 48,
       decoration: BoxDecoration(
-        color: const Color(0xFFE3EEF7),
-        borderRadius: BorderRadius.circular(8),
+        color: _blueLight,
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: const Icon(Icons.inventory_2, color: Color(0xFF0A4174), size: 26),
+      child: const Icon(Icons.inventory_2_outlined, color: _blue1, size: 24),
     );
   }
 }

@@ -134,6 +134,10 @@ class _PengeluaranPageState extends State<PengeluaranPage> {
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               ),

@@ -16,6 +16,12 @@ class PerfumeLocalDS {
     );
   }
 
+  Future<void> updatePerfume(int id, String name) {
+    return db.updatePerfume(
+      PerfumesCompanion(id: Value(id), name: Value(name)),
+    );
+  }
+
   Future<void> deletePerfume(int id) {
     return db.deletePerfume(id);
   }

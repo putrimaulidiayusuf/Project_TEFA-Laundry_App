@@ -16,6 +16,12 @@ class UnitLocalDS {
     );
   }
 
+  Future<void> updateUnit(int id, String name) {
+    return db.updateUnit(
+      UnitsCompanion(id: Value(id), name: Value(name)),
+    );
+  }
+
   Future<void> deleteUnit(int id) {
     return db.deleteUnit(id);
   }

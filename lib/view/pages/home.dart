@@ -23,6 +23,7 @@ import 'package:app_laundry/view/pages/navbar.dart';
 import 'package:app_laundry/view/viewmodels/home_vm.dart';
 import 'package:app_laundry/view/viewmodels/profile_vm.dart';
 import 'package:app_laundry/view/viewmodels/outlet_vm.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 // Warna biru utama
 const _blue1    = Color(0xFF0A4174);
@@ -123,15 +124,15 @@ Positioned(
             shape: BoxShape.circle,
             border: Border.all(       // ← border tetap kelihatan
               color: _blueSoft,
-              width: 2.5,
+              width: 3,
             ),
             boxShadow: [
-              BoxShadow(
-                color: _blue1.withValues(alpha: 0.55),
-                blurRadius: selectedIndex == 1 ? 22 : 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
+  BoxShadow(
+    color: const Color(0xFF003B73).withValues(alpha: 0.55),
+    blurRadius: selectedIndex == 1 ? 22 : 14,
+    offset: const Offset(0, 6),
+  ),
+],
           ),
           child: ClipOval(            // ← clip gambar tanpa potong border
             child: Image.asset(
@@ -373,8 +374,7 @@ class _HomeContentState extends State<_HomeContent>
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const ProfilePage()),
+                      SlideRoute(page: const ProfilePage()),
                     );
                   },
                   child: _buildProfileAvatar(selectedKasir),
@@ -461,7 +461,7 @@ class _HomeContentState extends State<_HomeContent>
   void _goToRiwayat(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const RiwayatPage()),
+      SlideRoute(page: const RiwayatPage()),
     );
   }
 
@@ -475,7 +475,7 @@ class _HomeContentState extends State<_HomeContent>
         onTap: () async {
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const OutletPage()),
+            SlideRoute(page: const OutletPage()),
           );
           if (mounted) context.read<OutletVM>().load();
         },
@@ -612,7 +612,7 @@ class _HomeContentState extends State<_HomeContent>
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => target),
+      SlideRoute(page: target),
     );
   }
 

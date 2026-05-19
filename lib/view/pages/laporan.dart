@@ -11,6 +11,7 @@ import 'laporan/export_excel_page.dart';
 import 'laporan/laporan_kasir_page.dart';
 import 'laporan/laporan_metode_bayar_page.dart';
 import 'laporan/laporan_satuan_page.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 const _blue = Color(0xFF003B73);
 const _bg = Color(0xFFF0F4F8);
@@ -359,7 +360,7 @@ class _MenuCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(
-          context, MaterialPageRoute(builder: (_) => menu.page)),
+          context, SlideRoute(page: menu.page)),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

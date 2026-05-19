@@ -7,6 +7,7 @@ import 'package:app_laundry/view/viewmodels/outlet_vm.dart';
 import 'package:app_laundry/view/pages/outlet_template.dart';
 import 'package:app_laundry/view/pages/outlet_printer.dart';
 import 'package:app_laundry/view/pages/outlet_metode.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 const _blue = Color(0xFF003B73);
 const _bg = Color(0xFFF0F4F8);
@@ -399,12 +400,12 @@ class _OutletPageState extends State<OutletPage> {
                               Icons.receipt_long_outlined,
                               () => Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        ChangeNotifierProvider.value(
-                                          value: vm,
-                                          child: const OutletTemplatePage(),
-                                        )),
+                                SlideRoute(
+                                  page: ChangeNotifierProvider.value(
+                                    value: vm,
+                                    child: const OutletTemplatePage(),
+                                  ),
+                                ),
                               ),
                             ),
                             _buildNavRow(
@@ -412,8 +413,7 @@ class _OutletPageState extends State<OutletPage> {
                               Icons.print_outlined,
                               () => Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                    builder: (_) => const OutletPrinterPage()),
+                                SlideRoute(page: const OutletPrinterPage()),
                               ),
                               subtitle: 'Tidak Ada Printer yang terhubung!',
                             ),
@@ -473,13 +473,12 @@ class _OutletPageState extends State<OutletPage> {
                                   child: GestureDetector(
                                     onTap: () => Navigator.push(
                                       context,
-                                      MaterialPageRoute(
-                                          builder: (_) =>
-                                              ChangeNotifierProvider.value(
-                                                value: vm,
-                                                child:
-                                                    const OutletMetodePage(),
-                                              )),
+                                      SlideRoute(
+                                        page: ChangeNotifierProvider.value(
+                                          value: vm,
+                                          child: const OutletMetodePage(),
+                                        ),
+                                      ),
                                     ),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
@@ -515,12 +514,12 @@ class _OutletPageState extends State<OutletPage> {
                                   ),
                                   onPressed: () => Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            ChangeNotifierProvider.value(
-                                              value: vm,
-                                              child: const OutletMetodePage(),
-                                            )),
+                                    SlideRoute(
+                                      page: ChangeNotifierProvider.value(
+                                        value: vm,
+                                        child: const OutletMetodePage(),
+                                      ),
+                                    ),
                                   ),
                                   child: const Text('Kelola Data',
                                       style: TextStyle(color: Colors.white)),

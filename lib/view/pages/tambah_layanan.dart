@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/database/app_database.dart';
 import '../viewmodels/service_vm.dart';
 import '../widgets/header.dart';
 import 'tambah_jenis_layanan.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 class TambahLayananPage extends StatefulWidget {
   final Service? service;
@@ -192,8 +194,8 @@ class _TambahLayananPageState extends State<TambahLayananPage> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => TambahJenisLayananPage(
+                              SlideRoute(
+                                page: TambahJenisLayananPage(
                                   serviceId: _activeService!.id,
                                 ),
                               ),
@@ -231,8 +233,8 @@ class _TambahLayananPageState extends State<TambahLayananPage> {
                           onEdit: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => TambahJenisLayananPage(
+                              SlideRoute(
+                                page: TambahJenisLayananPage(
                                   serviceId: _activeService!.id,
                                   existingType: jenis,
                                 ),
@@ -367,7 +369,7 @@ class _NoJenisWidget extends StatelessWidget {
         Icon(
           Icons.search_off_rounded,
           size: 70,
-          color: const Color(0xFFFF8F00).withValues(alpha: 0.7),
+          color: const Color(0xFF0A4174).withValues(alpha: 0.7),
         ),
         const SizedBox(height: 8),
         const Text(
@@ -407,17 +409,19 @@ class _JenisCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Gambar/icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE3EEF7),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.inventory_2,
-                color: Color(0xFF0A4174), size: 24),
-          ),
+          // Gambar
+          jenis.image != null && jenis.image!.isNotEmpty
+              ? buildImageFromPath(jenis.image!, size: 44, radius: 8)
+              : Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE3EEF7),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.inventory_2,
+                      color: Color(0xFF0A4174), size: 24),
+                ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -429,7 +433,7 @@ class _JenisCard extends StatelessWidget {
                       fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 Text(
-                  'Rp.${jenis.price.toInt()} • $durasi',
+                  'Rp ${NumberFormat('#,###', 'id_ID').format(jenis.price.toInt())} • $durasi',
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],

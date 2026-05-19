@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 // import page kamu
 import 'package:app_laundry/view/pages/layanan.dart';
@@ -152,7 +153,8 @@ class NavbarPage extends StatelessWidget {
   Widget menuItem(
     BuildContext context, {
     required String title,
-    required String iconPath,
+    String? iconPath,
+    IconData? iconData,
     required Widget page,
   }) {
     return InkWell(
@@ -160,7 +162,7 @@ class NavbarPage extends StatelessWidget {
         Navigator.pop(context); // 🔥 tutup drawer dulu
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => page),
+          SlideRoute(page: page),
         );
       },
       child: Padding(
@@ -175,15 +177,17 @@ class NavbarPage extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              child: Image.asset(
-                iconPath,
-                width: 18,
-                height: 18,
-                fit: BoxFit.contain,
-                errorBuilder: (c, e, s) {
-                  return const Icon(Icons.image_not_supported, size: 16);
-                },
-              ),
+              child: iconData != null
+                  ? Icon(iconData, size: 20, color: const Color(0xFF0A4174))
+                  : Image.asset(
+                      iconPath ?? '',
+                      width: 18,
+                      height: 18,
+                      fit: BoxFit.contain,
+                      errorBuilder: (c, e, s) {
+                        return const Icon(Icons.image_not_supported, size: 16);
+                      },
+                    ),
             ),
             const SizedBox(width: 14),
             Expanded(

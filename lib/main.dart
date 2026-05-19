@@ -66,7 +66,7 @@ void main() async {
         ChangeNotifierProvider(create: (c) => KasirVM(c.read())..load()),
         ChangeNotifierProvider(create: (c) => HomeVM(c.read())),
         ChangeNotifierProvider(create: (c) => PengeluaranVM(c.read())..load()),
-        ChangeNotifierProvider(create: (c) => ProfileVM(c.read())),
+        ChangeNotifierProvider(create: (c) => ProfileVM(c.read())..load()),
         ChangeNotifierProvider(create: (c) => TransaksiVM(c.read())),
         ChangeNotifierProvider(create: (_) => OutletVM()..load()),
       ],
@@ -85,6 +85,19 @@ class MyApp extends StatelessWidget {
       builder: (_, __) => GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Kasmini Laundry",
+        theme: ThemeData(
+          useMaterial3: false,
+          inputDecorationTheme: const InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
         initialBinding: BindingsBuilder(() {
           Get.put(PrinterController(), permanent: true); // ← aktif
         }),

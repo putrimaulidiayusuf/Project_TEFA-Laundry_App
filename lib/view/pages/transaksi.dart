@@ -7,9 +7,11 @@ import 'package:provider/provider.dart';
 import '../viewmodels/transaksi_vm.dart';
 import '../viewmodels/customer_vm.dart';
 import '../viewmodels/outlet_vm.dart';
+import '../viewmodels/profile_vm.dart';
 import '../widgets/header.dart';
 import 'pilih_layanan_page.dart';
 import 'transaksi_berhasil_page.dart';
+import 'package:app_laundry/core/routes/slide_route.dart';
 
 // ── Style dari kode kedua ──
 const _primary = Color(0xFF1565C0); // Colors.blue.shade800
@@ -199,6 +201,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
   Future<void> _doCheckout(BuildContext ctx, double jumlahBayar) async {
     final vm        = ctx.read<TransaksiVM>();
     final outletVM  = ctx.read<OutletVM>();
+    final profileVM = ctx.read<ProfileVM>();
     final totalHarga = vm.total;
     final nav        = Navigator.of(context);
     final messenger  = ScaffoldMessenger.of(context);
@@ -207,7 +210,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
     final namaPelanggan    = vm.pelanggan?.name ?? '-';
     final tanggal          = DateFormat('dd/MM/yyyy HH:mm').format(vm.tanggalMasuk);
     final estimasiSelesai  = DateFormat('dd/MM/yyyy HH:mm').format(vm.estimasiSelesai);
-    final namaKasir        = ''; // isi dari ProfileVM kalau ada
+    final namaKasir        = profileVM.selectedKasir?.nama ?? '';
     final metodeBayar      = vm.metodeBayar;
     final keterangan       = vm.keterangan;
     final diskon           = vm.diskon.toInt();
@@ -228,8 +231,8 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
 
       if (!mounted) return;
 
-      nav.push(MaterialPageRoute(
-        builder: (_) => TransaksiBerhasilPage(
+      nav.push(SlideRoute(
+        page: TransaksiBerhasilPage(
           totalHarga:      totalHarga,
           jumlahBayar:     jumlahBayar,
           onBuatBaru:      () => nav.pop(),
@@ -368,9 +371,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
                         ElevatedButton(
                           onPressed: () => Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const PilihLayananPage()),
+                            SlideRoute(page: const PilihLayananPage()),
                           ),
                           child: const Text('Tambah Layanan'),
                         ),
@@ -751,7 +752,7 @@ class _CartItemCard extends StatelessWidget {
                       fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 Text(
-                  'Rp.${item.serviceType.price.toInt()} /${item.unit.name}',
+                  'Rp ${NumberFormat('#,###', 'id_ID').format(item.serviceType.price.toInt())} /${item.unit.name}',
                   style: const TextStyle(
                       fontSize: 12, color: Colors.black54),
                 ),

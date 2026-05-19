@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -89,36 +90,25 @@ class _PilihLayananPageState extends State<PilihLayananPage> {
           // ===== Search Bar =====
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _search,
-                    onChanged: _doSearch,
-                    decoration: InputDecoration(
-                      hintText: 'Cari',
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      filled: true,
-                      fillColor: const Color(0xFFF5F5F5),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 16),
-                    ),
-                  ),
+            child: TextField(
+              controller: _search,
+              onChanged: _doSearch,
+              decoration: InputDecoration(
+                hintText: 'Cari layanan...',
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.sort, color: Colors.grey),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
                 ),
-              ],
+                contentPadding: const EdgeInsets.symmetric(
+                    vertical: 10, horizontal: 16),
+              ),
             ),
           ),
 
@@ -423,7 +413,7 @@ class _ServiceGroup extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14)),
                         Text(
-                          'Rp.${t.price.toInt()}/ $unitName',
+                          'Rp ${NumberFormat('#,###', 'id_ID').format(t.price.toInt())}/ $unitName',
                           style: const TextStyle(
                               fontSize: 12, color: Colors.black87),
                         ),
